@@ -2,51 +2,38 @@
    CSS Variables & Reset
    ============================================ */
 :root {
-    /* Colors - Cyber Teal Theme */
     --bg-primary: #0B1215;
-    /* Deep Obsidian */
     --bg-secondary: #101A1E;
-    /* Dark Petrol */
     --bg-tertiary: #152228;
     --bg-card: rgba(0, 255, 200, 0.03);
     --bg-card-hover: rgba(0, 255, 200, 0.08);
 
     --text-primary: #ffffff;
     --text-secondary: #94A3B8;
-    /* Steel Grey */
     --text-muted: #64748b;
 
     --accent-primary: #00FFC8;
-    /* Cyber Teal / Mint */
     --accent-secondary: #2DE2C3;
-    /* Terminal Cyan */
     --accent-glow: rgba(0, 255, 200, 0.4);
     --accent-alert: #39FF14;
-    /* Neon Green */
 
     --border-color: #1E293B;
-    /* Dim Slate */
     --border-hover: rgba(0, 255, 200, 0.3);
 
-    /* Gradients */
     --gradient-accent: linear-gradient(135deg, #00FFC8 0%, #2DE2C3 100%);
     --gradient-glow: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
 
-    /* Typography */
     --font-heading: 'Rajdhani', sans-serif;
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
-    /* Spacing */
     --section-padding: 120px;
     --container-width: 1200px;
 
-    /* Transitions */
     --transition-fast: 0.2s ease;
     --transition-medium: 0.3s ease;
     --transition-slow: 0.5s ease;
 }
 
-/* Custom Font Setup - Removed in favor of Google Fonts */
 
 *,
 *::before,
@@ -59,7 +46,6 @@
 html {
     scroll-behavior: smooth;
     font-size: 18px;
-    /* Increased base font size */
 }
 
 body {
@@ -67,12 +53,11 @@ body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.7;
-    /* Increased line height */
     overflow-x: hidden;
     letter-spacing: 0.02em;
 }
 
-/* Apply Custom Font only to headings and specific UI elements */
+
 h1,
 h2,
 h3,
@@ -251,10 +236,63 @@ h4,
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 16px;
-    background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Rajdhani', sans-serif;
+}
+
+* {
+    cursor: none;
+}
+
+.cursor-dot {
+    width: 12px;
+    height: 12px;
+    background: #F42A41;
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+    box-shadow: 0 0 0 3px #006A4E, 0 0 20px rgba(244, 42, 65, 0.5);
+}
+
+.cursor-dot.hover {
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 0 0 5px #006A4E, 0 0 30px rgba(244, 42, 65, 0.6);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0B1215;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00FFC8;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #2DE2C3;
 }
 
 .tagline {

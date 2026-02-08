@@ -1,87 +1,321 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniTx | Terminal</title>
-    <meta name="description" content="OmniTx - Developer Terminal Dashboard">
+    <title>OmniTx | Portfolio</title>
+    <meta name="description" content="OmniTx - Full Stack Developer & Creative Technologist">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style3.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-teal': '#00FFC8',
+                        'cyber-teal-dark': '#2DE2C3',
+                        'bg-main': '#0B1215',
+                        'bg-secondary': '#101A1E',
+                        'bg-tertiary': '#152228',
+                    },
+                    fontFamily: {
+                        'heading': ['Rajdhani', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'glow': 'glow 3s ease-in-out infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%, 100%': { opacity: '0.5', transform: 'scale(1)' },
+                            '50%': { opacity: '0.8', transform: 'scale(1.05)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-    <div class="terminal-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="traffic-lights">
-                    <span class="light red"></span>
-                    <span class="light yellow"></span>
-                    <span class="light green"></span>
-                </div>
-                <div class="sidebar-title">TERM - omnitx</div>
-            </div>
+<body class="bg-bg-main text-gray-100 overflow-x-hidden">
+    <!-- Particle Background -->
+    <canvas id="particles" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
 
-            <div class="file-explorer">
-                <div class="folder open">
-                    <span class="folder-icon">📂</span> root
-                </div>
-                <ul class="file-list">
-                    <li class="file-item active" data-file="home">
-                        <span class="file-icon">📝</span> README.md
-                    </li>
-                    <li class="file-item" data-file="about">
-                        <span class="file-icon">👤</span> about.json
-                    </li>
-                    <li class="file-item" data-file="stack">
-                        <span class="file-icon">⚙️</span> skills.yml
-                    </li>
-                    <li class="file-item" data-file="projects">
-                        <span class="file-icon">📦</span> projects.js
-                    </li>
-                    <li class="file-item" data-file="contact">
-                        <span class="file-icon">📧</span> contact.sh
-                    </li>
-                </ul>
-            </div>
+    <!-- Custom Cursor -->
+    <div class="cursor-dot"></div>
 
-            <div class="sidebar-footer">
-                <a href="index_classic.html" class="mode-switch">Classic Mode</a>
-                <a href="index2.html" class="mode-switch">Grid Mode</a>
-            </div>
-        </aside>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-bg-main/80 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="#" class="flex items-center">
+                <img src="assets/logo.png" alt="OmniTx Logo" class="h-10 w-auto object-contain">
+            </a>
+            <ul class="hidden md:flex items-center gap-8 font-heading text-sm uppercase tracking-wider">
+                <li><a href="index_terminal.html" class="hover:text-cyber-teal transition-colors">Terminal</a></li>
+                <li><a href="index2.html" class="hover:text-cyber-teal transition-colors">Grid</a></li>
+                <li><a href="#about" class="hover:text-cyber-teal transition-colors">About</a></li>
+                <li><a href="#skills" class="hover:text-cyber-teal transition-colors">Skills</a></li>
+                <li><a href="#projects" class="hover:text-cyber-teal transition-colors">Projects</a></li>
+                <li><a href="#contact" class="hover:text-cyber-teal transition-colors">Contact</a></li>
+            </ul>
+            <button class="md:hidden flex flex-col gap-1.5 p-2" id="menu-toggle">
+                <span class="w-6 h-0.5 bg-white transition-all"></span>
+                <span class="w-6 h-0.5 bg-white transition-all"></span>
+                <span class="w-6 h-0.5 bg-white transition-all"></span>
+            </button>
+        </div>
+    </nav>
 
-        <!-- Main Editor Area -->
-        <main class="editor-area">
-            <!-- Tabs -->
-            <div class="tabs-bar">
-                <div class="tab active" data-tab="home">
-                    <span class="file-icon">📝</span> README.md
-                </div>
-                <!-- Dynamic tabs can go here -->
-            </div>
+    <!-- Hero Section -->
+    <section class="min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
+        <!-- Animated Background Orbs -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-cyber-teal/20 rounded-full blur-3xl animate-glow"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-glow"
+            style="animation-delay: 1s;"></div>
 
-            <!-- Content Area -->
-            <div class="code-viewport" id="viewport">
-                <!-- Content injected via JS -->
-            </div>
-
-            <!-- Terminal / Input Area -->
-            <div class="terminal-input-area">
-                <div class="command-line">
-                    <span class="prompt">omnitx@dev:~$</span>
-                    <input type="text" id="cmd-input" placeholder="Type 'help' for commands..." autocomplete="off">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
+            <!-- Text Content -->
+            <div class="space-y-6 animate-float">
+                <span class="text-cyber-teal font-medium tracking-wide">Hello, I'm</span>
+                <h1
+                    class="text-6xl md:text-7xl font-bold font-heading uppercase tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                    OmniTx
+                </h1>
+                <p class="text-2xl font-heading uppercase text-gray-400">Full Stack Developer</p>
+                <p class="text-lg text-gray-400 leading-relaxed max-w-lg">
+                    I build digital experiences that live on the internet. My focus is on writing clean, elegant, and
+                    efficient code.
+                </p>
+                <div class="flex gap-4 pt-4">
+                    <a href="#contact"
+                        class="px-8 py-3 bg-gradient-to-r from-cyber-teal to-cyber-teal-dark text-black font-heading uppercase font-semibold rounded-lg hover:shadow-lg hover:shadow-cyber-teal/50 transition-all hover:-translate-y-1">
+                        Contact Me
+                    </a>
+                    <a href="#projects"
+                        class="px-8 py-3 border border-gray-700 backdrop-blur-sm hover:border-cyber-teal font-heading uppercase font-semibold rounded-lg transition-all hover:-translate-y-1">
+                        View Work
+                    </a>
                 </div>
             </div>
-        </main>
-    </div>
 
-    <script src="script3.js"></script>
+            <!-- Visual Element -->
+            <div class="relative hidden md:block">
+                <div
+                    class="relative backdrop-blur-sm bg-bg-secondary/50 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                    <div class="flex gap-2 mb-4">
+                        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                    </div>
+                    <pre class="text-sm leading-relaxed"><span class="text-purple-400">const</span> <span class="text-blue-400">developer</span> = {
+  <span class="text-orange-400">name</span>: <span class="text-green-400">"OmniTx"</span>,
+  <span class="text-orange-400">role</span>: <span class="text-green-400">"Full Stack Developer"</span>,
+  <span class="text-orange-400">skills</span>: [<span class="text-green-400">"React"</span>, <span class="text-green-400">"Node.js"</span>, <span class="text-green-400">"Python"</span>],
+  <span class="text-orange-400">available</span>: <span class="text-red-400">true</span>
+};</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div
+            class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-gray-500 font-heading text-xs uppercase tracking-widest">
+            <span>Scroll</span>
+            <div class="w-px h-12 bg-gradient-to-b from-cyber-teal to-transparent animate-pulse"></div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-24 bg-bg-secondary/50 backdrop-blur-sm">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2
+                class="text-4xl md:text-5xl font-bold font-heading uppercase mb-12 bg-gradient-to-r from-cyber-teal to-cyber-teal-dark bg-clip-text text-transparent">
+                About Me
+            </h2>
+            <div class="space-y-6 text-lg text-gray-300 leading-relaxed">
+                <p>
+                    I'm a passionate developer who loves creating beautiful, functional web experiences. With expertise
+                    in modern frameworks and a keen eye for design, I bring ideas to life through code.
+                </p>
+                <p>
+                    When I'm not coding, you'll find me exploring new technologies, contributing to open source, or
+                    enjoying a good cup of coffee while debugging.
+                </p>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-8 mt-16 pt-16 border-t border-gray-800">
+                <div>
+                    <div
+                        class="text-4xl font-bold font-heading bg-gradient-to-r from-cyber-teal to-cyber-teal-dark bg-clip-text text-transparent">
+                        5+</div>
+                    <div class="text-sm text-gray-500 uppercase tracking-wider mt-2">Years Experience</div>
+                </div>
+                <div>
+                    <div
+                        class="text-4xl font-bold font-heading bg-gradient-to-r from-cyber-teal to-cyber-teal-dark bg-clip-text text-transparent">
+                        50+</div>
+                    <div class="text-sm text-gray-500 uppercase tracking-wider mt-2">Projects Completed</div>
+                </div>
+                <div>
+                    <div
+                        class="text-4xl font-bold font-heading bg-gradient-to-r from-cyber-teal to-cyber-teal-dark bg-clip-text text-transparent">
+                        100%</div>
+                    <div class="text-sm text-gray-500 uppercase tracking-wider mt-2">Client Satisfaction</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-24 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2
+                class="text-4xl md:text-5xl font-bold font-heading uppercase text-center mb-16 bg-gradient-to-r from-cyber-teal to-cyber-teal-dark bg-clip-text text-transparent">
+                Skills & Expertise
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Frontend -->
+                <div
+                    class="group backdrop-blur-sm bg-bg-secondary/30 border border-gray-800 hover:border-cyber-teal rounded-2xl p-8 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-cyber-teal/10">
+                    <div class="text-4xl mb-4">💻</div>
+                    <h3 class="text-xl font-heading uppercase font-semibold mb-3">Frontend</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        React, Next.js, TailwindCSS, TypeScript, HTML5, CSS3
+                    </p>
+                </div>
+
+                <!-- Backend -->
+                <div
+                    class="group backdrop-blur-sm bg-bg-secondary/30 border border-gray-800 hover:border-cyber-teal rounded-2xl p-8 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-cyber-teal/10">
+                    <div class="text-4xl mb-4">⚙️</div>
+                    <h3 class="text-xl font-heading uppercase font-semibold mb-3">Backend</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Node.js, Python, PostgreSQL, MongoDB, REST APIs
+                    </p>
+                </div>
+
+                <!-- Tools -->
+                <div
+                    class="group backdrop-blur-sm bg-bg-secondary/30 border border-gray-800 hover:border-cyber-teal rounded-2xl p-8 transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-cyber-teal/10">
+                    <div class="text-4xl mb-4">🛠️</div>
+                    <h3 class="text-xl font-heading uppercase font-semibold mb-3">Tools</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Git, Docker, VS Code, Figma, Linux
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="py-24 bg-bg-secondary/50 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2
+                class="text-4xl md:text-5xl font-bold font-heading uppercase text-center mb-16 bg-gradient-to-r from-cyber-teal to-cyber-teal-dark bg-clip-text text-transparent">
+                Featured Projects
+            </h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Project 1 -->
+                <div
+                    class="group backdrop-blur-sm bg-bg-tertiary/50 border border-gray-800 hover:border-cyber-teal rounded-2xl overflow-hidden transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-cyber-teal/10">
+                    <div
+                        class="h-48 bg-gradient-to-br from-cyber-teal/20 to-purple-500/20 flex items-center justify-center text-6xl">
+                        🚀
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-heading uppercase font-semibold mb-2">Project Alpha</h3>
+                        <p class="text-gray-400 text-sm mb-4">
+                            A real-time web dashboard built with React and Firebase for monitoring analytics.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span
+                                class="px-3 py-1 bg-cyber-teal/10 text-cyber-teal text-xs font-heading uppercase rounded-full">React</span>
+                            <span
+                                class="px-3 py-1 bg-cyber-teal/10 text-cyber-teal text-xs font-heading uppercase rounded-full">Firebase</span>
+                        </div>
+                        <a href="#"
+                            class="text-cyber-teal hover:text-cyber-teal-dark font-medium text-sm transition-colors">
+                            View Project →
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div
+                    class="group backdrop-blur-sm bg-bg-tertiary/50 border border-gray-800 hover:border-cyber-teal rounded-2xl overflow-hidden transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-cyber-teal/10">
+                    <div
+                        class="h-48 bg-gradient-to-br from-purple-500/20 to-cyber-teal/20 flex items-center justify-center text-6xl">
+                        🛒
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-heading uppercase font-semibold mb-2">Project Beta</h3>
+                        <p class="text-gray-400 text-sm mb-4">
+                            E-commerce solution with Next.js and Stripe integration for seamless payments.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span
+                                class="px-3 py-1 bg-cyber-teal/10 text-cyber-teal text-xs font-heading uppercase rounded-full">Next.js</span>
+                            <span
+                                class="px-3 py-1 bg-cyber-teal/10 text-cyber-teal text-xs font-heading uppercase rounded-full">Stripe</span>
+                        </div>
+                        <a href="#"
+                            class="text-cyber-teal hover:text-cyber-teal-dark font-medium text-sm transition-colors">
+                            View Project →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 backdrop-blur-sm">
+        <div class="max-w-2xl mx-auto px-6 text-center">
+            <h2
+                class="text-4xl md:text-5xl font-bold font-heading uppercase mb-8 bg-gradient-to-r from-cyber-teal to-cyber-teal-dark bg-clip-text text-transparent">
+                Get In Touch
+            </h2>
+            <p class="text-lg text-gray-300 mb-12 leading-relaxed">
+                Have a project in mind or just want to chat? Feel free to reach out. I'm always open to discussing new
+                opportunities.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="mailto:imranomnitx@duck.com"
+                    class="group flex items-center justify-center gap-3 px-8 py-4 backdrop-blur-sm bg-bg-secondary/50 border border-gray-800 hover:border-cyber-teal rounded-lg transition-all hover:-translate-y-1">
+                    <span class="text-2xl">📧</span>
+                    <span class="font-medium">Email Me</span>
+                </a>
+                <a href="https://github.com/omnitx" target="_blank"
+                    class="group flex items-center justify-center gap-3 px-8 py-4 backdrop-blur-sm bg-bg-secondary/50 border border-gray-800 hover:border-cyber-teal rounded-lg transition-all hover:-translate-y-1">
+                    <span class="text-2xl">💻</span>
+                    <span class="font-medium">GitHub</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 border-t border-gray-800 backdrop-blur-sm bg-bg-secondary/50">
+        <div class="max-w-7xl mx-auto px-6 text-center text-gray-500 text-sm">
+            <p>© 2026-<span id="current-year"></span> OmniTx. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 
 </html>
