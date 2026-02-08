@@ -32,19 +32,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const navbar = document.querySelector('.navbar');
     let lastScroll = 0;
 
-    window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset;
+    if (navbar) {
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
 
-        if (currentScroll > 100) {
-            navbar.style.padding = '12px 0';
-            navbar.style.background = 'rgba(10, 10, 15, 0.95)';
-        } else {
-            navbar.style.padding = '20px 0';
-            navbar.style.background = 'rgba(10, 10, 15, 0.8)';
-        }
+            if (currentScroll > 100) {
+                navbar.style.padding = '12px 0';
+                navbar.style.background = 'rgba(10, 10, 15, 0.95)';
+            } else {
+                navbar.style.padding = '20px 0';
+                navbar.style.background = 'rgba(10, 10, 15, 0.8)';
+            }
 
-        lastScroll = currentScroll;
-    });
+            lastScroll = currentScroll;
+        });
+    }
 
     // Smooth reveal animations on scroll
     const observerOptions = {
