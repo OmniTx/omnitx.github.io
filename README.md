@@ -3,6 +3,8 @@
   <img src="https://img.shields.io/badge/IT_Manager-00FF88?style=for-the-badge&logo=workplace&logoColor=0d0d0d" />
   <img src="https://img.shields.io/badge/Full_Stack_Dev-1a1a1a?style=for-the-badge&logo=javascript&logoColor=00FF88" />
   <img src="https://img.shields.io/badge/UI/UX_Designer-00FF88?style=for-the-badge&logo=figma&logoColor=0d0d0d" />
+  <br>
+  [![pages-build-deployment](https://github.com/OmniTx/omnitx.github.io/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/OmniTx/omnitx.github.io/actions/workflows/pages/pages-build-deployment)
 </p>
 
 ---
