@@ -1,33 +1,30 @@
-# 1. Force UTF-8 Encoding for the Console (Fixes the Banner)
-[console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$OutputEncoding = [System.Text.Encoding]::UTF8
-
-# 2. Bypass Execution Policy for the current session
+# 1. Bypass Execution Policy for the current session
 Set-ExecutionPolicy Bypass -Scope Process -Force
 
-# 3. Ask for Elevated Permissions
+# 2. Ask for Elevated Permissions
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Warning "Administrator permissions required. Prompting for elevation..."
     if ($PSCommandPath) {
         Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
-    } else {
+    }
+    else {
         $webCmd = "Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-RestMethod -Uri https://omnitx.github.io/setup | Invoke-Expression"
         Start-Process PowerShell -ArgumentList "-NoProfile -Command `"$webCmd`"" -Verb RunAs
     }
     exit
 }
 
-# 4. Define the Animated OMNITX Banner Function
+# 3. Define the Bulletproof OMNITX Banner Function
 function Show-Banner([string]$Color = "Cyan") {
-    Write-Host "░█████░░███░░░░███░███░░░██░██░████████░██░░░██░" -ForegroundColor $Color
-    Write-Host "██░░░██░████░░████░████░░██░██░░░░██░░░░░██░██░░" -ForegroundColor $Color
-    Write-Host "██░░░██░██░████░██░██░██░██░██░░░░██░░░░░░███░░░" -ForegroundColor $Color
-    Write-Host "██░░░██░██░░██░░██░██░░████░██░░░░██░░░░░██░██░░" -ForegroundColor $Color
-    Write-Host "░█████░░██░░░░░░██░██░░░███░██░░░░██░░░░██░░░██░" -ForegroundColor $Color
+    Write-Host "  @@@@@   @@@   @@@  @@@   @@  @@  @@@@@@@  @@   @@ " -ForegroundColor $Color
+    Write-Host " @@   @@  @@@@ @@@@  @@@@  @@  @@    @@      @@ @@  " -ForegroundColor $Color
+    Write-Host " @@   @@  @@ @@@ @@  @@ @@ @@  @@    @@       @@@   " -ForegroundColor $Color
+    Write-Host " @@   @@  @@     @@  @@  @@@@  @@    @@      @@ @@  " -ForegroundColor $Color
+    Write-Host "  @@@@@   @@     @@  @@   @@@  @@    @@     @@   @@ " -ForegroundColor $Color
     Write-Host "`nRunning with Administrator privileges.                  `n" -ForegroundColor Green
 }
 
-# 5. Universal Interactive Menu Function (With ESC support)
+# 4. Universal Interactive Menu Function (With ESC support)
 function Show-Menu {
     param(
         [string]$Title,
@@ -93,7 +90,8 @@ function Show-Menu {
             if ($Title -match "Select Applications") {
                 Write-Host "QuickSkip: [ESC] (Proceed and skip installed apps)       " -ForegroundColor Magenta
                 Write-Host "Go Back  : [B]`n                                         " -ForegroundColor Magenta
-            } else {
+            }
+            else {
                 Write-Host "Back/Exit: [ESC] or [B]`n                                " -ForegroundColor Magenta
             }
 
@@ -106,7 +104,8 @@ function Show-Menu {
                     if ($MenuItems[$i].Installed) {
                         if ($MenuItems[$i].Selected) { $checkbox = "[X]"; $suffix = " (Force Update)" } 
                         else { $checkbox = "[√]" }
-                    } else {
+                    }
+                    else {
                         $checkbox = if ($MenuItems[$i].Selected) { "[X]" } else { "[ ]" }
                     }
                 }
@@ -130,12 +129,12 @@ function Show-Menu {
     return $MenuItems
 }
 
-# 6. Main Loop
+# 5. Main Loop
 while ($true) {
     $mainMenuItems = @(
-        [pscustomobject]@{ Display="1. Install OMNITX Setup (Apps & Tools)"; Id="Apps"; Selected=$false }
-        [pscustomobject]@{ Display="2. Fix & Repair Windows"; Id="Fix"; Selected=$false }
-        [pscustomobject]@{ Display="3. Exit"; Id="Exit"; Selected=$false }
+        [pscustomobject]@{ Display = "1. Install OMNITX Setup (Apps & Tools)"; Id = "Apps"; Selected = $false }
+        [pscustomobject]@{ Display = "2. Fix & Repair Windows"; Id = "Fix"; Selected = $false }
+        [pscustomobject]@{ Display = "3. Exit"; Id = "Exit"; Selected = $false }
     )
 
     $mainChoice = Show-Menu -Title "OMNITX Main Menu" -MenuItems $mainMenuItems -SingleSelect
@@ -161,21 +160,21 @@ while ($true) {
             Invoke-WebRequest -Uri $url -OutFile $output
             Add-AppxPackage -Path $output
             Remove-Item $output
-            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
         }
 
         $appItems = @(
-            [pscustomobject]@{ Display="7-Zip"; Id="7zip.7zip"; Installed=$false; Selected=$true; Type="Standard" }
-            [pscustomobject]@{ Display="WinRAR"; Id="RARLab.WinRAR"; Installed=$false; Selected=$true; Type="Standard" }
-            [pscustomobject]@{ Display="LocalSend"; Id="localsend.localsend"; Installed=$false; Selected=$true; Type="Standard" }
-            [pscustomobject]@{ Display="Everything"; Id="voidtools.Everything.Alpha"; Installed=$false; Selected=$true; Type="Standard" }
-            [pscustomobject]@{ Display="Notepad++"; Id="Notepad++.Notepad++"; Installed=$false; Selected=$true; Type="Standard" }
-            [pscustomobject]@{ Display="PotPlayer"; Id="Daum.PotPlayer"; Installed=$false; Selected=$true; Type="Standard" }
-            [pscustomobject]@{ Display="qBittorrent"; Id="qBittorrent.qBittorrent"; Installed=$false; Selected=$true; Type="Standard" }
-            [pscustomobject]@{ Display="Cloudflare WARP"; Id="Cloudflare.Warp"; Installed=$false; Selected=$true; Type="Standard" }
-            [pscustomobject]@{ Display="TightVNC (Auto-auth)"; Id="TightVNC.TightVNC"; Installed=$false; Selected=$true; Type="VNC" }
-            [pscustomobject]@{ Display="ZeroTier (Auto-join)"; Id="ZeroTier.ZeroTierOne"; Installed=$false; Selected=$true; Type="ZeroTier" }
-            [pscustomobject]@{ Display="Install Custom App(s)..."; Id="Custom"; Installed=$false; Selected=$false; Type="Custom" }
+            [pscustomobject]@{ Display = "7-Zip"; Id = "7zip.7zip"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "WinRAR"; Id = "RARLab.WinRAR"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "LocalSend"; Id = "localsend.localsend"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "Everything"; Id = "voidtools.Everything.Alpha"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "Notepad++"; Id = "Notepad++.Notepad++"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "PotPlayer"; Id = "Daum.PotPlayer"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "qBittorrent"; Id = "qBittorrent.qBittorrent"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "Cloudflare WARP"; Id = "Cloudflare.Warp"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "TightVNC (Auto-auth)"; Id = "TightVNC.TightVNC"; Installed = $false; Selected = $true; Type = "VNC" }
+            [pscustomobject]@{ Display = "ZeroTier (Auto-join)"; Id = "ZeroTier.ZeroTierOne"; Installed = $false; Selected = $true; Type = "ZeroTier" }
+            [pscustomobject]@{ Display = "Install Custom App(s)..."; Id = "Custom"; Installed = $false; Selected = $false; Type = "Custom" }
         )
 
         Write-Host "Scanning system for installed apps... (Press [ESC] to skip scan)" -ForegroundColor Yellow
@@ -232,7 +231,8 @@ while ($true) {
             if ([string]::IsNullOrWhiteSpace($vncPassword)) {
                 Write-Host "`nNo password entered. Skipping TightVNC installation." -ForegroundColor Yellow
                 $installTightVNC = $false
-            } else {
+            }
+            else {
                 Write-Host "Password captured.`n" -ForegroundColor Green
             }
         }
@@ -292,12 +292,12 @@ while ($true) {
 
         while ($true) {
             $fixItems = @(
-                [pscustomobject]@{ Display="Temporarily apply Cloudflare DNS (1.1.1.1)"; Id="CF_DNS"; Selected=$false }
-                [pscustomobject]@{ Display="SFC /Scannow (System File Checker)"; Id="SFC"; Selected=$false }
-                [pscustomobject]@{ Display="DISM /RestoreHealth (Standard, No Proxy)"; Id="DISM"; Selected=$false }
-                [pscustomobject]@{ Display="DISM /RestoreHealth (Custom Proxy to bypass cache)"; Id="DISM_PROXY"; Selected=$false }
-                [pscustomobject]@{ Display="Run Custom Script (Massgrave/Activation Placeholder)"; Id="MASSGRAVE"; Selected=$false }
-                [pscustomobject]@{ Display="Download & Run KVRT (Malware Scan)"; Id="KVRT"; Selected=$false }
+                [pscustomobject]@{ Display = "Temporarily apply Cloudflare DNS (1.1.1.1)"; Id = "CF_DNS"; Selected = $false }
+                [pscustomobject]@{ Display = "SFC /Scannow (System File Checker)"; Id = "SFC"; Selected = $false }
+                [pscustomobject]@{ Display = "DISM /RestoreHealth (Standard, No Proxy)"; Id = "DISM"; Selected = $false }
+                [pscustomobject]@{ Display = "DISM /RestoreHealth (Custom Proxy to bypass cache)"; Id = "DISM_PROXY"; Selected = $false }
+                [pscustomobject]@{ Display = "Run Custom Script (Massgrave/Activation Placeholder)"; Id = "MASSGRAVE"; Selected = $false }
+                [pscustomobject]@{ Display = "Download & Run KVRT (Malware Scan)"; Id = "KVRT"; Selected = $false }
             )
 
             $fixChoice = Show-Menu -Title "Windows Repair & Security (Enter to run action)" -MenuItems $fixItems -SingleSelect
@@ -323,10 +323,11 @@ while ($true) {
                 if ($adapter) {
                     $tempDnsAdapter = $adapter
                     Write-Host "Applying 1.1.1.1 and 1.0.0.1 to $($adapter.InterfaceAlias)..." -ForegroundColor Yellow
-                    Set-DnsClientServerAddress -InterfaceIndex $adapter.ifIndex -ServerAddresses ("1.1.1.1","1.0.0.1")
+                    Set-DnsClientServerAddress -InterfaceIndex $adapter.ifIndex -ServerAddresses ("1.1.1.1", "1.0.0.1")
                     Clear-DnsClientCache
                     Write-Host "DNS updated. It will automatically revert when you press [ESC] to exit." -ForegroundColor Green
-                } else {
+                }
+                else {
                     Write-Host "Could not automatically detect active physical adapter." -ForegroundColor Red
                 }
             }
@@ -336,8 +337,8 @@ while ($true) {
             }
             elseif ($selectedAction -eq "DISM") {
                 Write-Host "`n--- Running DISM RestoreHealth ---" -ForegroundColor Cyan
-                $env:HTTP_PROXY=""
-                $env:HTTPS_PROXY=""
+                $env:HTTP_PROXY = ""
+                $env:HTTPS_PROXY = ""
                 DISM /Online /Cleanup-Image /RestoreHealth
             }
             elseif ($selectedAction -eq "DISM_PROXY") {
@@ -355,7 +356,8 @@ while ($true) {
                     $env:HTTPS_PROXY = ""
                     netsh winhttp reset proxy | Out-Null
                     Write-Host "Proxy settings have been reset." -ForegroundColor Green
-                } else {
+                }
+                else {
                     Write-Host "No proxy entered. Skipping." -ForegroundColor Red
                 }
             }
