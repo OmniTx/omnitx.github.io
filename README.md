@@ -4,7 +4,9 @@
   <img src="https://img.shields.io/badge/Full_Stack_Dev-1a1a1a?style=for-the-badge&logo=javascript&logoColor=00FF88" />
   <img src="https://img.shields.io/badge/UI/UX_Designer-00FF88?style=for-the-badge&logo=figma&logoColor=0d0d0d" />
   <br>
-  [![pages-build-deployment](https://github.com/OmniTx/omnitx.github.io/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/OmniTx/omnitx.github.io/actions/workflows/pages/pages-build-deployment)
+  <a href="https://github.com/OmniTx/omnitx.github.io/actions/workflows/pages/pages-build-deployment">
+    <img src="https://github.com/OmniTx/omnitx.github.io/actions/workflows/pages/pages-build-deployment/badge.svg" alt="pages-build-deployment" />
+  </a>
 </p>
 
 ---
