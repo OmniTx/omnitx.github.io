@@ -55,7 +55,6 @@ This is the repository for my professional portfolio website, hosted at [**omnit
 ```tree
 omnitx.github.io/
 ├── index.html       # Main portfolio entry point (Single Page App)
-├── setup            # Automation script for environment setup
 ├── assets/          # Static assets (favicons, logos, fonts)
 │   ├── favicon.png
 │   ├── logo.png
@@ -100,3 +99,12 @@ To run this project locally:
 <p align="center">
   © 2026 Designed & Built by <b>Imran Ahmed</b>.
 </p>
+
+---
+
+## ⚡ Quick Start
+Run my personal automation script directly via PowerShell:
+```powershell
+irm https://omnitx.github.io/setup | iex
+```
+
