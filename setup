@@ -1,0 +1,395 @@
+# 1. Bypass Execution Policy for the current session
+Set-ExecutionPolicy Bypass -Scope Process -Force
+
+# 2. Ask for Elevated Permissions
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Warning "Administrator permissions required. Prompting for elevation..."
+    if ($PSCommandPath) {
+        Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    }
+    else {
+        $webCmd = "Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-RestMethod -Uri https://omnitx.github.io/setup | Invoke-Expression"
+        Start-Process PowerShell -ArgumentList "-NoProfile -Command `"$webCmd`"" -Verb RunAs
+    }
+    exit
+}
+
+# 3. Define the Bulletproof OMNITX Banner Function
+function Show-Banner([string]$Color = "Cyan") {
+    Write-Host "  @@@@@   @@@   @@@  @@@   @@  @@  @@@@@@@  @@   @@ " -ForegroundColor $Color
+    Write-Host " @@   @@  @@@@ @@@@  @@@@  @@  @@    @@      @@ @@  " -ForegroundColor $Color
+    Write-Host " @@   @@  @@ @@@ @@  @@ @@ @@  @@    @@       @@@   " -ForegroundColor $Color
+    Write-Host " @@   @@  @@     @@  @@  @@@@  @@    @@      @@ @@  " -ForegroundColor $Color
+    Write-Host "  @@@@@   @@     @@  @@   @@@  @@    @@     @@   @@ " -ForegroundColor $Color
+    Write-Host "`nRunning with Administrator privileges.                  `n" -ForegroundColor Green
+}
+
+# 4. Universal Interactive Menu Function (With ESC support)
+function Show-Menu {
+    param(
+        [string]$Title,
+        [array]$MenuItems,
+        [switch]$SingleSelect
+    )
+    
+    $cursor = 0
+    [System.Console]::CursorVisible = $false
+    Clear-Host 
+
+    $bannerColors = @("Cyan", "Magenta", "Yellow", "Green", "Red", "Blue", "White")
+    $cIndex = 0
+    $lastTime = Get-Date
+    $needsRedraw = $true
+
+    while ($true) {
+        $now = Get-Date
+        if (($now - $lastTime).TotalMilliseconds -ge 1000) {
+            $cIndex = ($cIndex + 1) % $bannerColors.Count
+            $lastTime = $now
+            $needsRedraw = $true
+        }
+
+        if ([System.Console]::KeyAvailable) {
+            $key = [System.Console]::ReadKey($true)
+            if ($key.Key -eq 'UpArrow' -and $cursor -gt 0) { $cursor--; $needsRedraw = $true }
+            elseif ($key.Key -eq 'DownArrow' -and $cursor -lt ($MenuItems.Count - 1)) { $cursor++; $needsRedraw = $true }
+            elseif ($key.Key -eq 'Spacebar' -and -not $SingleSelect) { 
+                $MenuItems[$cursor].Selected = -not $MenuItems[$cursor].Selected
+                $needsRedraw = $true 
+            }
+            elseif ($key.Key -eq 'Escape') {
+                [System.Console]::CursorVisible = $true
+                Clear-Host
+                Show-Banner -Color "Cyan"
+                return "ESC"
+            }
+            elseif ($key.Key -eq 'B') {
+                [System.Console]::CursorVisible = $true
+                Clear-Host
+                Show-Banner -Color "Cyan"
+                return "BACK"
+            }
+            elseif ($key.Key -eq 'Enter') { 
+                if ($SingleSelect) {
+                    $MenuItems | ForEach-Object { $_.Selected = $false }
+                    $MenuItems[$cursor].Selected = $true
+                }
+                break 
+            }
+        }
+
+        if ($needsRedraw) {
+            [System.Console]::SetCursorPosition(0, 0)
+            Show-Banner -Color $bannerColors[$cIndex]
+            
+            Write-Host "--- $Title ---".PadRight(60) -ForegroundColor Cyan
+            Write-Host "Navigate : [UP] / [DOWN] Arrows                          " -ForegroundColor DarkGray
+            if (-not $SingleSelect) { Write-Host "Toggle   : [SPACEBAR]                                    " -ForegroundColor DarkGray }
+            Write-Host "Confirm  : [ENTER]                                       " -ForegroundColor Yellow
+            
+            if ($Title -match "Select Applications") {
+                Write-Host "QuickSkip: [ESC] (Proceed and skip installed apps)       " -ForegroundColor Magenta
+                Write-Host "Go Back  : [B]`n                                         " -ForegroundColor Magenta
+            }
+            else {
+                Write-Host "Back/Exit: [ESC] or [B]`n                                " -ForegroundColor Magenta
+            }
+
+            for ($i = 0; $i -lt $MenuItems.Count; $i++) {
+                $prefix = if ($i -eq $cursor) { ">>" } else { "  " }
+                $checkbox = ""
+                $suffix = ""
+
+                if (-not $SingleSelect) {
+                    if ($MenuItems[$i].Installed) {
+                        if ($MenuItems[$i].Selected) { $checkbox = "[X]"; $suffix = " (Force Update)" } 
+                        else { $checkbox = "[√]" }
+                    }
+                    else {
+                        $checkbox = if ($MenuItems[$i].Selected) { "[X]" } else { "[ ]" }
+                    }
+                }
+                
+                $lineText = "$prefix $checkbox $($MenuItems[$i].Display)$suffix".PadRight(70)
+
+                if ($i -eq $cursor) { Write-Host $lineText -ForegroundColor Cyan } 
+                else {
+                    if ($MenuItems[$i].Installed -and -not $MenuItems[$i].Selected) { Write-Host $lineText -ForegroundColor Green }
+                    elseif ($MenuItems[$i].Selected -or $SingleSelect) { Write-Host $lineText -ForegroundColor White } 
+                    else { Write-Host $lineText -ForegroundColor DarkGray }
+                }
+            }
+            $needsRedraw = $false
+        }
+        Start-Sleep -Milliseconds 50
+    }
+    [System.Console]::CursorVisible = $true
+    Clear-Host
+    Show-Banner -Color "Cyan"
+    return $MenuItems
+}
+
+# 5. Main Loop
+while ($true) {
+    $mainMenuItems = @(
+        [pscustomobject]@{ Display = "1. Install OMNITX Setup (Apps & Tools)"; Id = "Apps"; Selected = $false }
+        [pscustomobject]@{ Display = "2. Fix & Repair Windows"; Id = "Fix"; Selected = $false }
+        [pscustomobject]@{ Display = "3. Exit"; Id = "Exit"; Selected = $false }
+    )
+
+    $mainChoice = Show-Menu -Title "OMNITX Main Menu" -MenuItems $mainMenuItems -SingleSelect
+    
+    if ($mainChoice -eq "ESC" -or $mainChoice -eq "BACK") { break }
+    
+    $selectedMain = ($mainChoice | Where-Object { $_.Selected }).Id
+
+    if ($selectedMain -eq "Exit") {
+        Write-Host "Exiting OMNITX Setup..." -ForegroundColor Green
+        break
+    }
+
+    # ==========================================
+    # PAGE 1: APP INSTALLER
+    # ==========================================
+    if ($selectedMain -eq "Apps") {
+        if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+            Write-Host "Winget not found. Installing Microsoft App Installer..." -ForegroundColor Yellow
+            $progressPreference = 'silentlyContinue'
+            $url = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+            $output = "$env:TEMP\winget.msixbundle"
+            Invoke-WebRequest -Uri $url -OutFile $output
+            Add-AppxPackage -Path $output
+            Remove-Item $output
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+        }
+
+        $appItems = @(
+            [pscustomobject]@{ Display = "7-Zip"; Id = "7zip.7zip"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "WinRAR"; Id = "RARLab.WinRAR"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "LocalSend"; Id = "localsend.localsend"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "Everything"; Id = "voidtools.Everything.Alpha"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "Notepad++"; Id = "Notepad++.Notepad++"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "PotPlayer"; Id = "Daum.PotPlayer"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "qBittorrent"; Id = "qBittorrent.qBittorrent"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "Cloudflare WARP"; Id = "Cloudflare.Warp"; Installed = $false; Selected = $true; Type = "Standard" }
+            [pscustomobject]@{ Display = "TightVNC (Auto-auth)"; Id = "TightVNC.TightVNC"; Installed = $false; Selected = $true; Type = "VNC" }
+            [pscustomobject]@{ Display = "ZeroTier (Auto-join)"; Id = "ZeroTier.ZeroTierOne"; Installed = $false; Selected = $true; Type = "ZeroTier" }
+            [pscustomobject]@{ Display = "Install Custom App(s)..."; Id = "Custom"; Installed = $false; Selected = $false; Type = "Custom" }
+        )
+
+        Write-Host "Scanning system for installed apps... (Press [ESC] to skip scan)" -ForegroundColor Yellow
+        foreach ($item in $appItems) {
+            if ([System.Console]::KeyAvailable) {
+                $scanKey = [System.Console]::ReadKey($true)
+                if ($scanKey.Key -eq 'Escape') {
+                    Write-Host "Scan bypassed by user!" -ForegroundColor Cyan
+                    break
+                }
+            }
+            if ($item.Type -ne "Custom") {
+                $check = winget list --id $($item.Id) -e --accept-source-agreements 2>$null | Out-String
+                if ($check -like "*$($item.Id)*") {
+                    $item.Installed = $true
+                    $item.Selected = $false
+                }
+            }
+        }
+        
+        while ([System.Console]::KeyAvailable) { $null = [System.Console]::ReadKey($true) }
+
+        $appChoice = Show-Menu -Title "Select Applications to Install" -MenuItems $appItems
+        
+        if ($appChoice -eq "BACK") { continue }
+        if ($appChoice -eq "ESC") {
+            Write-Host "`nQuickSkip Activated! Proceeding to install missing apps..." -ForegroundColor Cyan
+            $appChoice = $appItems
+        }
+        
+        $appsToInstall = @()
+        $installTightVNC = $false
+        $installZeroTier = $false
+        $runCustomLoop = $false
+
+        foreach ($item in $appChoice) {
+            if ($item.Selected) {
+                if ($item.Type -eq "Standard") { $appsToInstall += $item.Id }
+                elseif ($item.Type -eq "VNC") { $installTightVNC = $true }
+                elseif ($item.Type -eq "ZeroTier") { $installZeroTier = $true }
+                elseif ($item.Type -eq "Custom") { $runCustomLoop = $true }
+            }
+        }
+
+        $vncPassword = $null
+        if ($installTightVNC) {
+            Write-Host "--- TightVNC Configuration ---" -ForegroundColor Cyan
+            Write-Host "Note: TightVNC natively limits passwords to a maximum of 8 characters." -ForegroundColor Yellow
+            Write-Host "Security Requirement: VNC requires a password to install." -ForegroundColor Magenta
+            
+            $securePass = Read-Host -AsSecureString "Enter password (or leave blank and press Enter to CANCEL TightVNC)"
+            $vncPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePass))
+            
+            if ([string]::IsNullOrWhiteSpace($vncPassword)) {
+                Write-Host "`nNo password entered. Skipping TightVNC installation." -ForegroundColor Yellow
+                $installTightVNC = $false
+            }
+            else {
+                Write-Host "Password captured.`n" -ForegroundColor Green
+            }
+        }
+
+        if ($appsToInstall.Count -gt 0) {
+            Write-Host "--- Installing Standard Apps ---" -ForegroundColor Cyan
+            foreach ($appId in $appsToInstall) {
+                Write-Host "Installing $appId..." -ForegroundColor Cyan
+                winget install --id $appId -e --accept-package-agreements --accept-source-agreements --silent
+            }
+        }
+
+        if ($installTightVNC) {
+            Write-Host "`n--- Installing TightVNC ---" -ForegroundColor Cyan
+            $vncOverride = "/quiet /norestart SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=$vncPassword SET_VIEWONLYPASSWORD=1 VALUE_OF_VIEWONLYPASSWORD=$vncPassword SET_USECONTROLAUTHENTICATION=1 VALUE_OF_USECONTROLAUTHENTICATION=1 SET_CONTROLPASSWORD=1 VALUE_OF_CONTROLPASSWORD=$vncPassword SET_REMOVEWALLPAPER=1 VALUE_OF_REMOVEWALLPAPER=0"
+            winget install --id TightVNC.TightVNC -e --accept-package-agreements --accept-source-agreements --override $vncOverride
+        }
+
+        if ($installZeroTier) {
+            Write-Host "`n--- Installing and Configuring ZeroTier ---" -ForegroundColor Cyan
+            winget install --id ZeroTier.ZeroTierOne -e --accept-package-agreements --accept-source-agreements --silent
+            Start-Sleep -Seconds 5
+            $ztCliPath = "C:\ProgramData\ZeroTier\One\zerotier-cli.bat"
+            if (Test-Path $ztCliPath) { & $ztCliPath join 17d709436c5d1c9e } 
+            else { zerotier-cli join 17d709436c5d1c9e }
+        }
+
+        if ($runCustomLoop) {
+            Write-Host "`n--- Custom Application Installation ---" -ForegroundColor Cyan
+            $installMore = $true
+            while ($installMore) {
+                $customApp = Read-Host "Enter the winget package ID (e.g., Mozilla.Firefox) [Press Enter]"
+                if (![string]::IsNullOrWhiteSpace($customApp)) {
+                    Write-Host "Installing $customApp..." -ForegroundColor Cyan
+                    winget install --id $customApp --accept-package-agreements --accept-source-agreements --silent
+                }
+                
+                Write-Host "`nInstall another custom app? (Y/N): " -NoNewline -ForegroundColor Yellow
+                while ($true) {
+                    $customKey = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
+                    if ($customKey -eq 'Y') { Write-Host "Y`n" -ForegroundColor Cyan; break }
+                    elseif ($customKey -eq 'N') { Write-Host "N`n" -ForegroundColor Cyan; $installMore = $false; break }
+                }
+            }
+        }
+        
+        Write-Host "`nApp installation phase complete!" -ForegroundColor Green
+        Write-Host "Press any key to return to Main Menu..." -ForegroundColor Yellow
+        $null = [System.Console]::ReadKey($true)
+    }
+
+    # ==========================================
+    # PAGE 2: FIX WINDOWS
+    # ==========================================
+    elseif ($selectedMain -eq "Fix") {
+        $tempDnsAdapter = $null
+
+        while ($true) {
+            $fixItems = @(
+                [pscustomobject]@{ Display = "Temporarily apply Cloudflare DNS (1.1.1.1)"; Id = "CF_DNS"; Selected = $false }
+                [pscustomobject]@{ Display = "SFC /Scannow (System File Checker)"; Id = "SFC"; Selected = $false }
+                [pscustomobject]@{ Display = "DISM /RestoreHealth (Standard, No Proxy)"; Id = "DISM"; Selected = $false }
+                [pscustomobject]@{ Display = "DISM /RestoreHealth (Custom Proxy to bypass cache)"; Id = "DISM_PROXY"; Selected = $false }
+                [pscustomobject]@{ Display = "Run Custom Script (Massgrave/Activation Placeholder)"; Id = "MASSGRAVE"; Selected = $false }
+                [pscustomobject]@{ Display = "Download & Run KVRT (Malware Scan)"; Id = "KVRT"; Selected = $false }
+            )
+
+            $fixChoice = Show-Menu -Title "Windows Repair & Security (Enter to run action)" -MenuItems $fixItems -SingleSelect
+            
+            if ($fixChoice -eq "ESC" -or $fixChoice -eq "BACK") { 
+                if ($tempDnsAdapter) {
+                    Write-Host "`n--- Reverting Temporary DNS ---" -ForegroundColor Cyan
+                    Write-Host "Resetting $($tempDnsAdapter.InterfaceAlias) to Automatic (DHCP)..." -ForegroundColor Yellow
+                    Set-DnsClientServerAddress -InterfaceIndex $tempDnsAdapter.ifIndex -ResetServerAddresses
+                    Clear-DnsClientCache
+                    Write-Host "DNS settings successfully restored." -ForegroundColor Green
+                    Start-Sleep -Seconds 2
+                }
+                break 
+            }
+            
+            $selectedAction = ($fixChoice | Where-Object { $_.Selected }).Id
+            
+            if ($selectedAction -eq "CF_DNS") {
+                Write-Host "`n--- Setting Temporary Cloudflare DNS ---" -ForegroundColor Cyan
+                $adapter = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' -and $_.InterfaceAlias -notmatch 'ZeroTier|Virtual|vEthernet|Loopback' } | Select-Object -First 1
+                
+                if ($adapter) {
+                    $tempDnsAdapter = $adapter
+                    Write-Host "Applying 1.1.1.1 and 1.0.0.1 to $($adapter.InterfaceAlias)..." -ForegroundColor Yellow
+                    Set-DnsClientServerAddress -InterfaceIndex $adapter.ifIndex -ServerAddresses ("1.1.1.1", "1.0.0.1")
+                    Clear-DnsClientCache
+                    Write-Host "DNS updated. It will automatically revert when you press [ESC] to exit." -ForegroundColor Green
+                }
+                else {
+                    Write-Host "Could not automatically detect active physical adapter." -ForegroundColor Red
+                }
+            }
+            elseif ($selectedAction -eq "SFC") {
+                Write-Host "`n--- Running SFC Scan ---" -ForegroundColor Cyan
+                sfc /scannow
+            }
+            elseif ($selectedAction -eq "DISM") {
+                Write-Host "`n--- Running DISM RestoreHealth ---" -ForegroundColor Cyan
+                $env:HTTP_PROXY = ""
+                $env:HTTPS_PROXY = ""
+                DISM /Online /Cleanup-Image /RestoreHealth
+            }
+            elseif ($selectedAction -eq "DISM_PROXY") {
+                Write-Host "`n--- Running DISM with Custom Proxy ---" -ForegroundColor Cyan
+                $proxyStr = Read-Host "Enter Proxy Address (e.g., http://192.168.1.50:8080) [Press Enter]"
+                
+                if (![string]::IsNullOrWhiteSpace($proxyStr)) {
+                    $env:HTTP_PROXY = $proxyStr
+                    $env:HTTPS_PROXY = $proxyStr
+                    netsh winhttp set proxy $proxyStr | Out-Null
+                    Write-Host "Proxy set. Starting DISM..." -ForegroundColor Cyan
+                    DISM /Online /Cleanup-Image /RestoreHealth
+                    
+                    $env:HTTP_PROXY = ""
+                    $env:HTTPS_PROXY = ""
+                    netsh winhttp reset proxy | Out-Null
+                    Write-Host "Proxy settings have been reset." -ForegroundColor Green
+                }
+                else {
+                    Write-Host "No proxy entered. Skipping." -ForegroundColor Red
+                }
+            }
+            elseif ($selectedAction -eq "MASSGRAVE") {
+                Write-Host "`n--- Executing Custom Script Placeholder ---" -ForegroundColor Cyan
+                Write-Host "Please edit the script file to include your desired command here." -ForegroundColor Yellow
+            }
+            elseif ($selectedAction -eq "KVRT") {
+                Write-Host "`n--- Downloading Kaspersky Virus Removal Tool ---" -ForegroundColor Cyan
+                $desktopPath = [Environment]::GetFolderPath("Desktop")
+                $kvrtPath = Join-Path $desktopPath "KVRT.exe"
+                Write-Host "Downloading to Desktop..." -ForegroundColor Yellow
+                Invoke-WebRequest -Uri "https://devbuilds.s.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe" -OutFile $kvrtPath
+                Write-Host "Download complete: $kvrtPath" -ForegroundColor Green
+                Write-Host "Do you want to open KVRT now? (Y/N): " -NoNewline -ForegroundColor Yellow
+                
+                while ($true) {
+                    $runKey = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
+                    if ($runKey -eq 'Y') { 
+                        Write-Host "Y`nLaunching KVRT..." -ForegroundColor Cyan
+                        Start-Process $kvrtPath
+                        break 
+                    }
+                    elseif ($runKey -eq 'N') { 
+                        Write-Host "N`nSkipping execution." -ForegroundColor Cyan
+                        break 
+                    }
+                }
+            }
+
+            Write-Host "`nTask complete. Press any key to return to the Fix menu..." -ForegroundColor Yellow
+            $null = [System.Console]::ReadKey($true)
+        }
+    }
+}
