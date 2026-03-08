@@ -673,91 +673,103 @@ function Repair-WingetFull {
         $ProgressPreference = 'SilentlyContinue'
 
         try {
-            # Download the dependencies zip from GitHub releases
-            Write-Log "Downloading winget dependencies package..." -Level INFO
-            $depsZipUrl = "https://github.com/microsoft/winget-cli/releases/download/v1.10.340/DesktopAppInstaller_Dependencies.zip"
-            $depsZip = "$tempDir\dependencies.zip"
+            # Get latest release info from GitHub API
+            Write-Log "Fetching latest winget release information..." -Level INFO
+            $apiUrl = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
+            $release = Invoke-RestMethod -Uri $apiUrl -UseBasicParsing
             
-            try {
-                Invoke-WebRequest -Uri $depsZipUrl -OutFile $depsZip -UseBasicParsing -MaximumRedirection 5
-            }
-            catch {
-                # Fallback to alternative URL if the specific version fails
-                Write-Log "Primary URL failed, trying alternative..." -Level WARN
-                $altUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/DesktopAppInstaller_Dependencies.zip"
-                Invoke-WebRequest -Uri $altUrl -OutFile $depsZip -UseBasicParsing -MaximumRedirection 5
-            }
+            $tagName = $release.tag_name
+            Write-Log "Latest release: $tagName" -Level INFO
 
-            if (-not (Test-Path $depsZip)) {
-                throw "Failed to download dependencies package"
+            # Find the msixbundle, dependencies zip, and license file URLs
+            $msixBundleUrl = $release.assets | Where-Object { $_.name -like "*.msixbundle" } | Select-Object -ExpandProperty browser_download_url -First 1
+            $depsZipUrl = $release.assets | Where-Object { $_.name -like "*Dependencies*.zip" } | Select-Object -ExpandProperty browser_download_url -First 1
+            $licenseUrl = $release.assets | Where-Object { $_.name -like "*License*.xml" } | Select-Object -ExpandProperty browser_download_url -First 1
+
+            if (-not $msixBundleUrl) {
+                throw "Could not find MSIX bundle in latest release"
             }
 
-            Expand-Archive -Path $depsZip -DestinationPath $tempDir -Force
+            Write-Log "Found MSIX bundle: $msixBundleUrl" -Level INFO
 
-            # Find and install x64 dependencies
-            $x64Dir = Join-Path $tempDir "x64"
-            if (Test-Path $x64Dir) {
-                $deps = Get-ChildItem -Path $x64Dir -Filter "*.appx" -ErrorAction SilentlyContinue | 
-                        Sort-Object Name
-                
-                foreach ($dep in $deps) {
-                    Write-Log "Installing dependency: $($dep.Name)" -Level INFO
-                    try {
-                        Add-AppxPackage -Path $dep.FullName -ErrorAction Stop
-                        Write-Log "  ✓ Installed: $($dep.Name)" -Level OK
-                    }
-                    catch {
-                        Write-Log "  ⚠ Could not install $($dep.Name) (may already exist): $($_.Exception.Message)" -Level WARN
+            # Download dependencies if available
+            if ($depsZipUrl) {
+                Write-Log "Downloading dependencies package..." -Level INFO
+                $depsZip = "$tempDir\dependencies.zip"
+                Invoke-WebRequest -Uri $depsZipUrl -OutFile $depsZip -UseBasicParsing
+                Expand-Archive -Path $depsZip -DestinationPath $tempDir -Force
+
+                # Install x64 dependencies
+                $x64Dir = Join-Path $tempDir "x64"
+                if (Test-Path $x64Dir) {
+                    $deps = Get-ChildItem -Path $x64Dir -Filter "*.appx" -ErrorAction SilentlyContinue | Sort-Object Name
+                    foreach ($dep in $deps) {
+                        Write-Log "Installing dependency: $($dep.Name)" -Level INFO
+                        try {
+                            Add-AppxPackage -Path $dep.FullName -ErrorAction Stop
+                            Write-Log "  ✓ Installed: $($dep.Name)" -Level OK
+                        }
+                        catch {
+                            Write-Log "  ⚠ Could not install $($dep.Name) (may already exist): $($_.Exception.Message)" -Level WARN
+                        }
                     }
                 }
             }
+            else {
+                Write-Log "No dependencies package found, attempting to install VCLibs directly..." -Level WARN
+                # Fallback: Install VCLibs directly from aka.ms
+                $vcLibsUrl = "https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx"
+                $vcLibsPath = "$tempDir\Microsoft.VCLibs.x64.14.00.Desktop.appx"
+                try {
+                    Invoke-WebRequest -Uri $vcLibsUrl -OutFile $vcLibsPath -UseBasicParsing
+                    Add-AppxPackage -Path $vcLibsPath -ErrorAction SilentlyContinue
+                    Write-Log "Installed VCLibs from aka.ms" -Level OK
+                }
+                catch {
+                    Write-Log "Could not install VCLibs: $($_.Exception.Message)" -Level WARN
+                }
+            }
 
-            # Download and install winget MSIX bundle
+            # Download winget MSIX bundle
             Write-Log "Downloading Microsoft.DesktopAppInstaller..." -Level INFO
-            $wingetUrl = "https://github.com/microsoft/winget-cli/releases/download/v1.10.340/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
             $wingetBundle = "$tempDir\winget.msixbundle"
-            
-            try {
-                Invoke-WebRequest -Uri $wingetUrl -OutFile $wingetBundle -UseBasicParsing -MaximumRedirection 5
-            }
-            catch {
-                Write-Log "Primary winget URL failed, trying latest..." -Level WARN
-                $altWingetUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-                Invoke-WebRequest -Uri $altWingetUrl -OutFile $wingetBundle -UseBasicParsing -MaximumRedirection 5
-            }
+            Invoke-WebRequest -Uri $msixBundleUrl -OutFile $wingetBundle -UseBasicParsing
 
-            if (-not (Test-Path $wingetBundle)) {
-                throw "Failed to download winget package"
-            }
-
-            # Try to install winget
+            # Install winget
             Write-Log "Installing Microsoft.DesktopAppInstaller (winget)..." -Level INFO
+            
+            # Try standard install first (works on Windows 10/11 with proper dependencies)
             try {
                 Add-AppxPackage -Path $wingetBundle -ErrorAction Stop
                 Write-Log "  ✓ Winget installed successfully" -Level OK
             }
             catch {
-                # If regular install fails, try provisioned package approach
                 Write-Log "Standard install failed, attempting provisioned package install..." -Level WARN
                 
-                # Download license file
-                $licenseUrl = "https://github.com/microsoft/winget-cli/releases/download/v1.10.340/e53e159d00e04f729cc2180cffd1c02e_License1.xml"
-                $licenseFile = "$tempDir\license.xml"
-                
+                # Try provisioned package with SkipLicense (works on newer Windows versions)
                 try {
-                    Invoke-WebRequest -Uri $licenseUrl -OutFile $licenseFile -UseBasicParsing
-                    Add-AppxProvisionedPackage -Online -PackagePath $wingetBundle -LicensePath $licenseFile -ErrorAction Stop
-                    Write-Log "  ✓ Winget installed as provisioned package" -Level OK
+                    Add-AppxProvisionedPackage -Online -PackagePath $wingetBundle -SkipLicense -ErrorAction Stop | Out-Null
+                    Write-Log "  ✓ Winget installed as provisioned package (SkipLicense)" -Level OK
                 }
                 catch {
-                    throw "All installation methods failed: $($_.Exception.Message)"
+                    # If SkipLicense fails, try with license file if available
+                    if ($licenseUrl) {
+                        Write-Log "Attempting install with license file..." -Level WARN
+                        $licenseFile = "$tempDir\license.xml"
+                        Invoke-WebRequest -Uri $licenseUrl -OutFile $licenseFile -UseBasicParsing
+                        Add-AppxProvisionedPackage -Online -PackagePath $wingetBundle -LicensePath $licenseFile -ErrorAction Stop | Out-Null
+                        Write-Log "  ✓ Winget installed as provisioned package (with license)" -Level OK
+                    }
+                    else {
+                        throw "All installation methods failed. Last error: $($_.Exception.Message)"
+                    }
                 }
             }
 
             # Refresh PATH
             Write-Log "Refreshing environment PATH..." -Level INFO
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
-                        [System.Environment]::GetEnvironmentVariable("Path", "User")
+            [System.Environment]::GetEnvironmentVariable("Path", "User")
 
             # Verify installation
             $wingetCmd = Get-Command winget -ErrorAction SilentlyContinue
@@ -766,7 +778,19 @@ function Repair-WingetFull {
                 Write-Log "Winget verified: $version at $($wingetCmd.Source)" -Level OK
             }
             else {
-                Write-Log "Winget command not found in PATH after install. You may need to restart PowerShell." -Level WARN
+                Write-Log "Winget command not found in PATH immediately. You may need to restart PowerShell." -Level WARN
+                # Try to find it manually
+                $possiblePaths = @(
+                    "$env:LocalAppData\Microsoft\WindowsApps\winget.exe",
+                    "C:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*\winget.exe"
+                )
+                foreach ($path in $possiblePaths) {
+                    $found = Get-Item $path -ErrorAction SilentlyContinue | Select-Object -First 1
+                    if ($found) {
+                        Write-Log "Found winget at: $($found.FullName)" -Level INFO
+                        break
+                    }
+                }
             }
         }
         finally {
