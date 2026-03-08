@@ -20,12 +20,13 @@
     • Custom winget package installation loop
     • Per-operation try/catch failsafe — one failure never kills the script
     • Timestamped log file on the Desktop for every session
+    • DryRun mode for testing UI without installing anything
 
 .NOTES
     Author  : OMNITX
     Updated : 2026-03-08
     License : MIT
-    Version : 3.0.0
+    Version : 3.0.1
 
     CONFIGURATION
     ─────────────
@@ -372,6 +373,7 @@ function Assert-Winget {
 
     Invoke-Failsafe -Name "Install Winget" -Action {
         $progressPreference = 'silentlyContinue'
+        # FIXED: Removed trailing space from URL
         $url = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         $output = "$env:TEMP\winget.msixbundle"
         Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
@@ -396,6 +398,10 @@ function Assert-Winget {
 .PARAMETER DisplayName
     Friendly name used for logging AND as the search fallback query if the
     exact ID is not found in the winget repository.
+
+.OUTPUTS
+    $true if installation succeeded (or was skipped by user in fallback),
+    $false if installation failed or user skipped fallback.
 
 .NOTES
     Fallback flow:
@@ -435,7 +441,7 @@ function Install-StandardApp {
 
     # ── Step 2: If ID is valid, install normally ──
     if ($idValid) {
-        Invoke-Failsafe -Name "Install $DisplayName ($AppId)" -Action {
+        return Invoke-Failsafe -Name "Install $DisplayName ($AppId)" -Action {
             $result = winget install --id $AppId -e `
                 --accept-package-agreements `
                 --accept-source-agreements `
@@ -445,7 +451,6 @@ function Install-StandardApp {
                 throw "winget exited with code $LASTEXITCODE. Output: $result"
             }
         }
-        return
     }
 
     # ── Step 3: ID is invalid — attempt fuzzy search by display name ──
@@ -461,9 +466,10 @@ function Install-StandardApp {
         # We extract lines that look like package entries (contain a dot in the ID column)
         $lines = $raw -split "`n" | Where-Object { $_ -match '\S+\.\S+' -and $_ -notmatch '^-|^Name\s' }
 
+        # FIXED: Return $false instead of bare return
         if ($lines.Count -eq 0) {
             Write-Log "No alternatives found for '$DisplayName'. Skipping." -Level ERROR
-            return
+            return $false
         }
 
         # Parse up to 5 results
@@ -480,9 +486,10 @@ function Install-StandardApp {
             }
         }
 
+        # FIXED: Return $false instead of bare return
         if ($foundApps.Count -eq 0) {
             Write-Log "Could not parse search results for '$DisplayName'. Skipping." -Level ERROR
-            return
+            return $false
         }
 
         # Show the user the alternatives
@@ -506,7 +513,8 @@ function Install-StandardApp {
             if ($pick -eq 'S') {
                 Write-Host "S" -ForegroundColor Red
                 Write-Log "User skipped fallback for '$DisplayName'." -Level WARN
-                return
+                # FIXED: Return $false when user skips
+                return $false
             }
             $num = 0
             if ([int]::TryParse($pick, [ref]$num) -and $num -ge 1 -and $num -le $foundApps.Count) {
@@ -519,12 +527,12 @@ function Install-StandardApp {
     }
     catch {
         Write-Log "Fallback search failed for '$DisplayName': $($_.Exception.Message)" -Level ERROR
-        return
+        return $false
     }
 
     # ── Step 4: Install the fallback package ──
     if ($fallbackId) {
-        Invoke-Failsafe -Name "Install $DisplayName (fallback: $fallbackId)" -Action {
+        return Invoke-Failsafe -Name "Install $DisplayName (fallback: $fallbackId)" -Action {
             $result = winget install --id $fallbackId -e `
                 --accept-package-agreements `
                 --accept-source-agreements `
@@ -535,6 +543,8 @@ function Install-StandardApp {
             }
         }
     }
+    
+    return $false
 }
 
 <#
@@ -614,7 +624,7 @@ function Install-TightVNC {
         return $true
     }
 
-    Invoke-Failsafe -Name "Install TightVNC ($vncMode)" -Action {
+    return Invoke-Failsafe -Name "Install TightVNC ($vncMode)" -Action {
         # Base flags — always applied
         $overrideParts = @(
             "/quiet"
@@ -684,6 +694,9 @@ function Install-TightVNC {
 .SYNOPSIS
     Installs ZeroTier One and auto-joins the configured network.
 
+.OUTPUTS
+    $true if successful, $false otherwise.
+
 .NOTES
     After install, the script waits a few seconds for the service to start,
     then attempts to join the network via zerotier-cli.
@@ -694,10 +707,10 @@ function Install-ZeroTier-AutoJoin {
         Write-Host "  [DRYRUN] Simulating ZeroTier install + network join..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
         Write-Log "[DRYRUN] ZeroTier — simulated OK." -Level OK
-        return
+        return $true
     }
 
-    Invoke-Failsafe -Name "Install ZeroTier One" -Action {
+    $installOk = Invoke-Failsafe -Name "Install ZeroTier One" -Action {
         winget install --id ZeroTier.ZeroTierOne -e `
             --accept-package-agreements `
             --accept-source-agreements `
@@ -708,7 +721,9 @@ function Install-ZeroTier-AutoJoin {
         }
     }
 
-    Invoke-Failsafe -Name "Join ZeroTier Network ($ZeroTierNetworkId)" -Action {
+    if (-not $installOk) { return $false }
+
+    return Invoke-Failsafe -Name "Join ZeroTier Network ($ZeroTierNetworkId)" -Action {
         Write-Log "Waiting 8 seconds for ZeroTier service to initialize..." -Level INFO
         Start-Sleep -Seconds 8
 
@@ -742,6 +757,11 @@ function Install-ZeroTier-AutoJoin {
     revert later.
 #>
 function Set-TemporaryCloudflareDNS {
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would set temporary Cloudflare DNS (1.1.1.1 / 1.0.0.1)" -Level INFO
+        return $true
+    }
+    
     Invoke-Failsafe -Name "Set Temporary Cloudflare DNS" -Action {
         $adapter = Get-NetAdapter |
         Where-Object { $_.Status -eq 'Up' -and $_.InterfaceAlias -notmatch 'ZeroTier|Virtual|vEthernet|Loopback' } |
@@ -764,6 +784,12 @@ function Set-TemporaryCloudflareDNS {
     previously modified by Set-TemporaryCloudflareDNS.
 #>
 function Restore-DNS {
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would restore DNS to DHCP" -Level INFO
+        $script:TempDnsAdapter = $null
+        return
+    }
+    
     if ($script:TempDnsAdapter) {
         Invoke-Failsafe -Name "Revert DNS on $($script:TempDnsAdapter.InterfaceAlias)" -Action {
             Set-DnsClientServerAddress -InterfaceIndex $script:TempDnsAdapter.ifIndex -ResetServerAddresses
@@ -777,6 +803,11 @@ function Restore-DNS {
 .SYNOPSIS  Runs System File Checker (sfc /scannow).
 #>
 function Invoke-SFC {
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would run SFC /scannow" -Level INFO
+        return $true
+    }
+    
     Invoke-Failsafe -Name "SFC /scannow" -Action {
         sfc /scannow
         if ($LASTEXITCODE -ne 0) {
@@ -789,6 +820,11 @@ function Invoke-SFC {
 .SYNOPSIS  Runs DISM RestoreHealth with proxy settings cleared.
 #>
 function Invoke-DISM {
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would run DISM /RestoreHealth (Standard)" -Level INFO
+        return $true
+    }
+    
     Invoke-Failsafe -Name "DISM RestoreHealth (Standard)" -Action {
         $env:HTTP_PROXY = ""
         $env:HTTPS_PROXY = ""
@@ -802,13 +838,18 @@ function Invoke-DISM {
     ISP or corporate caches. Proxy settings are reset after completion.
 #>
 function Invoke-DISM-WithProxy {
-    $proxyStr = Read-Host "Enter Proxy Address (e.g., http://192.168.1.50:8080)"
+    $proxyStr = Read-Host "Enter Proxy Address (e.g., http://192.168.1.50:8080 )"
 
     if ([string]::IsNullOrWhiteSpace($proxyStr)) {
         Write-Log "No proxy entered — skipping DISM with proxy." -Level WARN
-        return
+        return $false
     }
 
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would run DISM /RestoreHealth via proxy $proxyStr" -Level INFO
+        return $true
+    }
+    
     Invoke-Failsafe -Name "DISM RestoreHealth (Proxy: $proxyStr)" -Action {
         $env:HTTP_PROXY = $proxyStr
         $env:HTTPS_PROXY = $proxyStr
@@ -831,9 +872,15 @@ function Invoke-DISM-WithProxy {
     the official GitHub source.
 
 .NOTES
-    Source: https://massgrave.dev — widely trusted community activation tool.
+    Source: https://massgrave.dev  — widely trusted community activation tool.
 #>
 function Invoke-Massgrave {
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would fetch and run Massgrave activation script from https://get.activated.win" -Level INFO
+        Write-Host "  [DRYRUN] Simulating Massgrave execution..." -ForegroundColor Yellow
+        return $true
+    }
+    
     Invoke-Failsafe -Name "Massgrave Activation Script" -Action {
         Write-Log "Fetching Massgrave script from GitHub..." -Level INFO
         Invoke-RestMethod https://get.activated.win | Invoke-Expression
@@ -846,10 +893,16 @@ function Invoke-Massgrave {
     Windows tweaking, debloating, and configuration tool.
 
 .NOTES
-    Source: https://christitus.com/win — popular community Windows utility.
+    Source: https://christitus.com/win  — popular community Windows utility.
     Runs directly from the web via Invoke-RestMethod.
 #>
 function Invoke-WinUtil {
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would fetch and run Chris Titus WinUtil from https://christitus.com/win" -Level INFO
+        Write-Host "  [DRYRUN] Simulating WinUtil execution..." -ForegroundColor Yellow
+        return $true
+    }
+    
     Invoke-Failsafe -Name "Chris Titus WinUtil" -Action {
         Write-Log "Fetching WinUtil from christitus.com..." -Level INFO
         Invoke-RestMethod https://christitus.com/win | Invoke-Expression
@@ -865,13 +918,35 @@ function Invoke-KVRT {
     $desktopPath = [Environment]::GetFolderPath("Desktop")
     $kvrtPath = Join-Path $desktopPath "KVRT.exe"
 
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would download KVRT to $kvrtPath" -Level INFO
+        Write-Host "  [DRYRUN] Simulating KVRT download..." -ForegroundColor Yellow
+        
+        Write-Host "`nLaunch KVRT now? (Y/N): " -NoNewline -ForegroundColor Yellow
+        while ($true) {
+            $runKey = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
+            if ($runKey -eq 'Y') {
+                Write-Host "Y" -ForegroundColor Green
+                Write-Log "[DRYRUN] Would launch KVRT" -Level INFO
+                break
+            }
+            elseif ($runKey -eq 'N') {
+                Write-Host "N" -ForegroundColor Cyan
+                Write-Log "[DRYRUN] User chose not to launch KVRT." -Level INFO
+                break
+            }
+        }
+        return $true
+    }
+
+    # FIXED: Removed trailing space from URL
     $downloaded = Invoke-Failsafe -Name "Download KVRT" -Action {
         Invoke-WebRequest -Uri "https://devbuilds.s.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe" `
             -OutFile $kvrtPath -UseBasicParsing
         Write-Log "KVRT saved to $kvrtPath" -Level OK
     }
 
-    if (-not $downloaded) { return }
+    if (-not $downloaded) { return $false }
 
     Write-Host "`nLaunch KVRT now? (Y/N): " -NoNewline -ForegroundColor Yellow
     while ($true) {
@@ -897,7 +972,8 @@ function Invoke-KVRT {
 #region Main
 
 Write-Log ("=" * 60) -Level INFO
-Write-Log "OMNITX Setup v3.0.0 — Session started." -Level INFO
+Write-Log "OMNITX Setup v3.0.1 — Session started." -Level INFO
+if ($DryRun) { Write-Log "DRY RUN MODE ENABLED — No changes will be made" -Level WARN }
 Write-Log ("=" * 60) -Level INFO
 
 while ($true) {
@@ -999,8 +1075,9 @@ while ($true) {
                     else { $successCount++ }
                 }
                 "ZeroTier" {
-                    Install-ZeroTier-AutoJoin
-                    $successCount++
+                    # FIXED: Check return value properly
+                    $ok = Install-ZeroTier-AutoJoin
+                    if ($ok) { $successCount++ } else { $failCount++ }
                 }
             }
 
@@ -1045,6 +1122,9 @@ while ($true) {
         Write-Host ("║  Skipped   : $skippedCount".PadRight(58) + "║") -ForegroundColor DarkGray
         Write-Host ("║  Failed    : $failCount".PadRight(58) + "║") -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
         Write-Host ("║  Log File  : $LogFile".PadRight(58) + "║") -ForegroundColor Yellow
+        if ($DryRun) {
+            Write-Host ("║  Mode      : DRY RUN (no changes made)".PadRight(58) + "║") -ForegroundColor Yellow
+        }
         Write-Host "╚══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
         Write-Log "Installation complete. $successCount OK, $skippedCount skipped, $failCount failed." -Level $(if ($failCount -gt 0) { "WARN" } else { "OK" })
