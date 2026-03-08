@@ -26,7 +26,6 @@
     Author  : OMNITX
     Updated : 2026-03-08
     License : MIT
-    Version : 3.1.0
 
     CONFIGURATION
     ─────────────
@@ -74,6 +73,9 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 # REGION: Configuration  (edit these values to customize the script)
 # ═══════════════════════════════════════════════════════════════════════════════
 #region Configuration
+
+# --- Script Version ---
+$ScriptVersion = "3.1.0"
 
 # --- DryRun Mode ---
 # Set to $true to test the full UI without installing anything.
@@ -169,7 +171,8 @@ function Show-Banner {
         "  @@@@@   @@     @@  @@   @@@  @@    @@     @@   @@ "
     )
     foreach ($l in $lines) { Write-Host $l -ForegroundColor $Color }
-    Write-Host "`nRunning with Administrator privileges.`n" -ForegroundColor Green
+    Write-Host "`n  OMNITX Setup Script v$ScriptVersion" -ForegroundColor White
+    Write-Host "  Running with Administrator privileges.`n" -ForegroundColor Green
     if ($DryRun) {
         Write-Host "  ██████  DRY RUN MODE — Nothing will be installed  ██████`n" -ForegroundColor Yellow
     }
