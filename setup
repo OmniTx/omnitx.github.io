@@ -75,7 +75,7 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 #region Configuration
 
 # --- Script Version ---
-$ScriptVersion = "3.2.2"
+$ScriptVersion = "3.2.3"
 
 # --- DryRun Mode ---
 # Set to $true to test the full UI without installing anything.
@@ -643,29 +643,62 @@ function Install-TightVNC {
     }
 
     if ($DryRun) {
-        Write-Log "[DRYRUN] Would install TightVNC: mode=$vncMode via $PackageManager" -Level INFO
+        Write-Log "[DRYRUN] Would install TightVNC: mode=$vncMode via Direct MSI" -Level INFO
         Write-Host "  [DRYRUN] Simulating TightVNC install..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
         Write-Log "[DRYRUN] TightVNC - simulated OK." -Level OK
         return $true
     }
 
-    # Always use direct MSI download for TightVNC to ensure proper configuration
-    # This avoids winget override issues and Chocolatey package limitations
-    return Invoke-Failsafe -Name "Install TightVNC ($vncMode) via Direct MSI" -Action {
-        $tempDir = "$env:TEMP\TightVNCInstall"
-        New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-        
+    # Try multiple download sources
+    $tempDir = "$env:TEMP\TightVNCInstall"
+    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+    $msiPath = "$tempDir\tightvnc.msi"
+    
+    # Source 1: GitHub releases (primary)
+    $arch = if ([Environment]::Is64BitOperatingSystem) { "64bit" } else { "32bit" }
+    $urls = @(
+        "https://github.com/Tight-VNC/tightvnc/releases/download/v2.8.85/tightvnc-2.8.85-gpl-setup-$arch.msi"
+        "https://www.tightvnc.com/download/2.8.85/tightvnc-2.8.85-gpl-setup-$arch.msi"
+        "https://tightvnc.com/download/2.8.85/tightvnc-2.8.85-gpl-setup-$arch.msi"
+    )
+
+    $downloaded = $false
+    foreach ($url in $urls) {
         try {
-            $arch = if ([Environment]::Is64BitOperatingSystem) { "64bit" } else { "32bit" }
-            $msiUrl = "https://github.com/Tight-VNC/tightvnc/releases/download/v2.8.85/tightvnc-2.8.85-gpl-setup- $arch.msi"
-            $msiPath = "$tempDir\tightvnc.msi"
-            
-            Write-Log "Downloading TightVNC MSI ($arch) from GitHub..." -Level INFO
-            Invoke-WebRequest -Uri $msiUrl -OutFile $msiPath -UseBasicParsing
-            
+            Write-Log "Attempting download from: $url" -Level INFO
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri $url -OutFile $msiPath -UseBasicParsing -TimeoutSec 30
+            if (Test-Path $msiPath -and (Get-Item $msiPath).Length -gt 1000000) {
+                Write-Log "Download successful: $url" -Level OK
+                $downloaded = $true
+                break
+            }
+        }
+        catch {
+            Write-Log "Download failed from $url`: $($_.Exception.Message)" -Level WARN
+            continue
+        }
+    }
+
+    if (-not $downloaded) {
+        # Fallback: Try Chocolatey if available
+        if (Get-Command choco -ErrorAction SilentlyContinue) {
+            Write-Log "All direct downloads failed. Falling back to Chocolatey..." -Level WARN
+            return Invoke-Failsafe -Name "Install TightVNC ($vncMode) via Chocolatey" -Action {
+                $result = choco install tightvnc -y --no-progress 2>&1
+                if ($LASTEXITCODE -ne 0 -and $result -notmatch "already installed") {
+                    throw "Chocolatey TightVNC install failed with code $LASTEXITCODE"
+                }
+                Write-Log "TightVNC installed via Chocolatey fallback" -Level OK
+            }
+        }
+        throw "All download sources failed and Chocolatey not available"
+    }
+
+    return Invoke-Failsafe -Name "Install TightVNC ($vncMode) via Direct MSI" -Action {
+        try {
             # Build MSI arguments for server-only install
-            # Use array to avoid quoting issues
             $msiArgs = @(
                 "/i"
                 "`"$msiPath`""
@@ -688,7 +721,6 @@ function Install-TightVNC {
                 $msiArgs += "VALUE_OF_VIEWONLYPASSWORD=$vncPassword"
             }
 
-            # Add additional settings
             $msiArgs += @(
                 "SET_USECONTROLAUTHENTICATION=1"
                 "VALUE_OF_USECONTROLAUTHENTICATION=0"
@@ -707,19 +739,14 @@ function Install-TightVNC {
             )
 
             Write-Log "Installing TightVNC with MSI..." -Level INFO
-            Write-Log "MSI arguments: $($msiArgs -join ' ')" -Level INFO
-            
             $process = Start-Process -FilePath "msiexec.exe" -ArgumentList $msiArgs -Wait -PassThru
             
             if ($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010) {
                 throw "MSI installation failed with exit code $($process.ExitCode)"
             }
             
-            Write-Log "TightVNC installed successfully via direct MSI" -Level OK
-            
-            # Start the service if not already running
+            Write-Log "TightVNC installed successfully" -Level OK
             Start-Service -Name "tvnserver" -ErrorAction SilentlyContinue
-            Write-Log "TightVNC service started" -Level OK
         }
         finally {
             Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
