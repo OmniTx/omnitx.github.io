@@ -75,7 +75,7 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 #region Configuration
 
 # --- Script Version ---
-$ScriptVersion = "3.2.3"
+$ScriptVersion = "3.2.4"
 
 # --- DryRun Mode ---
 # Set to $true to test the full UI without installing anything.
@@ -660,7 +660,6 @@ function Install-TightVNC {
     $urls = @(
         "https://github.com/Tight-VNC/tightvnc/releases/download/v2.8.85/tightvnc-2.8.85-gpl-setup-$arch.msi"
         "https://www.tightvnc.com/download/2.8.85/tightvnc-2.8.85-gpl-setup-$arch.msi"
-        "https://tightvnc.com/download/2.8.85/tightvnc-2.8.85-gpl-setup-$arch.msi"
     )
 
     $downloaded = $false
@@ -698,7 +697,7 @@ function Install-TightVNC {
 
     return Invoke-Failsafe -Name "Install TightVNC ($vncMode) via Direct MSI" -Action {
         try {
-            # Build MSI arguments for server-only install
+            # Build MSI arguments - ORDER MATTERS! Authentication settings must come first
             $msiArgs = @(
                 "/i"
                 "`"$msiPath`""
@@ -707,23 +706,29 @@ function Install-TightVNC {
                 "ADDLOCAL=Server"
                 "SERVER_REGISTER_AS_SERVICE=1"
                 "SERVER_ADD_FIREWALL_EXCEPTION=1"
+                # Authentication settings MUST come before password settings
                 "SET_USEVNCAUTHENTICATION=1"
             )
 
             if ($vncMode -eq "NoAuth") {
+                # For NoAuth: Disable VNC authentication entirely (0 = do not require auth)
                 $msiArgs += "VALUE_OF_USEVNCAUTHENTICATION=0"
+                # Do NOT set any password properties when in NoAuth mode!
             }
             else {
+                # For Password mode: Enable VNC authentication and set passwords
                 $msiArgs += "VALUE_OF_USEVNCAUTHENTICATION=1"
                 $msiArgs += "SET_PASSWORD=1"
                 $msiArgs += "VALUE_OF_PASSWORD=$vncPassword"
-                $msiArgs += "SET_VIEWONLYPASSWORD=1" 
+                $msiArgs += "SET_VIEWONLYPASSWORD=1"
                 $msiArgs += "VALUE_OF_VIEWONLYPASSWORD=$vncPassword"
             }
 
+            # Control interface settings (no admin password needed)
             $msiArgs += @(
                 "SET_USECONTROLAUTHENTICATION=1"
                 "VALUE_OF_USECONTROLAUTHENTICATION=0"
+                # Other server settings
                 "SET_ACCEPTHTTPCONNECTIONS=1"
                 "VALUE_OF_ACCEPTHTTPCONNECTIONS=0"
                 "SET_REMOVEWALLPAPER=1"
@@ -738,7 +743,9 @@ function Install-TightVNC {
                 "VALUE_OF_BLOCKLOCALINPUT=1"
             )
 
-            Write-Log "Installing TightVNC with MSI..." -Level INFO
+            Write-Log "Installing TightVNC with MSI (Mode: $vncMode)..." -Level INFO
+            Write-Log "MSI arguments: $($msiArgs -join ' ')" -Level INFO
+            
             $process = Start-Process -FilePath "msiexec.exe" -ArgumentList $msiArgs -Wait -PassThru
             
             if ($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010) {
@@ -746,7 +753,21 @@ function Install-TightVNC {
             }
             
             Write-Log "TightVNC installed successfully" -Level OK
-            Start-Service -Name "tvnserver" -ErrorAction SilentlyContinue
+            
+            # Verify service is running
+            $service = Get-Service -Name "tvnserver" -ErrorAction SilentlyContinue
+            if ($service) {
+                if ($service.Status -ne 'Running') {
+                    Start-Service -Name "tvnserver" -ErrorAction SilentlyContinue
+                    Write-Log "TightVNC service started" -Level OK
+                }
+                else {
+                    Write-Log "TightVNC service already running" -Level OK
+                }
+            }
+            else {
+                Write-Log "TightVNC service not found - may need manual start" -Level WARN
+            }
         }
         finally {
             Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
