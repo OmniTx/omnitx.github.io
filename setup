@@ -12,12 +12,12 @@
     Features
     --------
     • One-by-one app installation with Y/N/ESC per app
-    • Winget-based installation with auto-fallback if package IDs change
+    • Dual package manager support: Winget OR Chocolatey
     • TightVNC: server-only, no tray, no start menu, file transfer,
       RDP session, local input blocked, no-auth or password mode
     • ZeroTier auto-join to a pre-configured network
-    • Windows repair toolkit (SFC, DISM, DNS, KVRT, Massgrave, WinUtil, Winget Repair)
-    • Custom winget package installation loop
+    • Windows repair toolkit (SFC, DISM, DNS, KVRT, Massgrave, WinUtil, Winget/Choco Repair)
+    • Custom package installation loop (supports both managers)
     • Per-operation try/catch failsafe — one failure never kills the script
     • Timestamped log file on the Desktop for every session
     • DryRun mode for testing UI without installing anything
@@ -30,7 +30,7 @@
     CONFIGURATION
     ─────────────
     All user-editable values live in the "Configuration" region below.
-    Change the ZeroTier network ID, app list, log path, etc. there.
+    Change the ZeroTier network ID, app list, log path, package manager, etc. there.
 
     LOGGING
     ───────
@@ -75,12 +75,18 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 #region Configuration
 
 # --- Script Version ---
-$ScriptVersion = "3.1.0"
+$ScriptVersion = "3.2.0"
 
 # --- DryRun Mode ---
 # Set to $true to test the full UI without installing anything.
-# All winget commands are simulated. Menus, prompts, and logging work normally.
+# All package manager commands are simulated. Menus, prompts, and logging work normally.
 $DryRun = $false
+
+# --- Package Manager Selection ---
+# Set to "Winget" or "Chocolatey" to choose your preferred package manager.
+# If the selected manager is not available, the script will attempt to install it.
+# If installation fails, you can switch to the other manager in the Repair menu.
+$PackageManager = "Winget"  # Options: "Winget", "Chocolatey"
 
 # --- ZeroTier ---
 $ZeroTierNetworkId = "17d709436c5d1c9e"                     # Network to auto-join
@@ -89,27 +95,27 @@ $ZeroTierNetworkId = "17d709436c5d1c9e"                     # Network to auto-jo
 $LogFile = Join-Path ([Environment]::GetFolderPath("Desktop")) "OMNITX_Setup_Log.txt"
 
 # --- App Catalog ---
-# Each entry: Display name (shown to user), winget package ID, and a Type
+# Each entry: Display name (shown to user), package IDs for both managers, and a Type
 # tag that controls special post-install behavior.
 #
 #   Type values:
-#     Standard  – installed silently via winget, no extra steps
+#     Standard  – installed silently via package manager, no extra steps
 #     VNC       – TightVNC with full configuration prompt
 #     ZeroTier  – installed then auto-joined to $ZeroTierNetworkId
 #
 # Apps are presented ONE BY ONE. The user confirms each individually.
 #
 $AppCatalog = @(
-    @{ Display = "7-Zip"; Id = "7zip.7zip"; Type = "Standard" }
-    @{ Display = "WinRAR"; Id = "RARLab.WinRAR"; Type = "Standard" }
-    @{ Display = "LocalSend"; Id = "localsend.localsend"; Type = "Standard" }
-    @{ Display = "Everything (Alpha)"; Id = "voidtools.Everything.Alpha"; Type = "Standard" }
-    @{ Display = "Notepad++"; Id = "Notepad++.Notepad++"; Type = "Standard" }
-    @{ Display = "PotPlayer"; Id = "Daum.PotPlayer"; Type = "Standard" }
-    @{ Display = "qBittorrent"; Id = "qBittorrent.qBittorrent"; Type = "Standard" }
-    @{ Display = "Cloudflare WARP"; Id = "Cloudflare.Warp"; Type = "Standard" }
-    @{ Display = "TightVNC"; Id = "TightVNC.TightVNC"; Type = "VNC" }
-    @{ Display = "ZeroTier"; Id = "ZeroTier.ZeroTierOne"; Type = "ZeroTier" }
+    @{ Display = "7-Zip"; WingetId = "7zip.7zip"; ChocoId = "7zip"; Type = "Standard" }
+    @{ Display = "WinRAR"; WingetId = "RARLab.WinRAR"; ChocoId = "winrar"; Type = "Standard" }
+    @{ Display = "LocalSend"; WingetId = "localsend.localsend"; ChocoId = "localsend"; Type = "Standard" }
+    @{ Display = "Everything (Alpha)"; WingetId = "voidtools.Everything.Alpha"; ChocoId = "everything"; Type = "Standard" }
+    @{ Display = "Notepad++"; WingetId = "Notepad++.Notepad++"; ChocoId = "notepadplusplus"; Type = "Standard" }
+    @{ Display = "PotPlayer"; WingetId = "Daum.PotPlayer"; ChocoId = "potplayer"; Type = "Standard" }
+    @{ Display = "qBittorrent"; WingetId = "qBittorrent.qBittorrent"; ChocoId = "qbittorrent"; Type = "Standard" }
+    @{ Display = "Cloudflare WARP"; WingetId = "Cloudflare.Warp"; ChocoId = "cloudflare-warp"; Type = "Standard" }
+    @{ Display = "TightVNC"; WingetId = "TightVNC.TightVNC"; ChocoId = "tightvnc"; Type = "VNC" }
+    @{ Display = "ZeroTier"; WingetId = "ZeroTier.ZeroTierOne"; ChocoId = "zerotier-one"; Type = "ZeroTier" }
 )
 
 #endregion Configuration
@@ -172,6 +178,7 @@ function Show-Banner {
     )
     foreach ($l in $lines) { Write-Host $l -ForegroundColor $Color }
     Write-Host "`n  OMNITX Setup Script v$ScriptVersion" -ForegroundColor White
+    Write-Host "  Package Manager: $PackageManager" -ForegroundColor Cyan
     Write-Host "  Running with Administrator privileges.`n" -ForegroundColor Green
     if ($DryRun) {
         Write-Host "  ██████  DRY RUN MODE — Nothing will be installed  ██████`n" -ForegroundColor Yellow
@@ -231,10 +238,9 @@ function Show-Menu {
                         $MenuItems | ForEach-Object { $_.Selected = $false }
                         $MenuItems[$cursor].Selected = $true
                     }
-                    break  # exits inner while
+                    break
                 }
             }
-            # 'Enter' also needs to exit the outer while
             if ($key.Key -eq 'Enter') { break }
         }
 
@@ -294,15 +300,33 @@ function Show-Menu {
 #endregion Helpers
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# REGION: Core Operations
+# REGION: Package Manager Operations
 # ═══════════════════════════════════════════════════════════════════════════════
-#region Core Operations
+#region PackageManager
 
-function Assert-Winget {
+<#
+.SYNOPSIS
+    Ensures the selected package manager (Winget or Chocolatey) is available.
+    Downloads and installs it if missing.
+#>
+function Assert-PackageManager {
     if ($DryRun) {
-        Write-Log "[DRYRUN] Winget check skipped." -Level INFO
+        Write-Log "[DRYRUN] Package manager check skipped." -Level INFO
         return
     }
+
+    switch ($PackageManager) {
+        "Winget" { Assert-Winget }
+        "Chocolatey" { Assert-Chocolatey }
+        default {
+            Write-Log "Unknown package manager: $PackageManager. Defaulting to Winget." -Level WARN
+            $script:PackageManager = "Winget"
+            Assert-Winget
+        }
+    }
+}
+
+function Assert-Winget {
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         Write-Log "Winget is already available." -Level OK
         return
@@ -318,28 +342,71 @@ function Assert-Winget {
         Add-AppxPackage -Path $output
         Remove-Item $output -Force
 
-        # Refresh PATH so winget is discoverable immediately
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
         [System.Environment]::GetEnvironmentVariable("Path", "User")
     }
 }
 
+function Assert-Chocolatey {
+    if (Get-Command choco -ErrorAction SilentlyContinue) {
+        Write-Log "Chocolatey is already available." -Level OK
+        return
+    }
+
+    Write-Log "Chocolatey not found — installing..." -Level WARN
+
+    Invoke-Failsafe -Name "Install Chocolatey" -Action {
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
+        [System.Environment]::GetEnvironmentVariable("Path", "User")
+    }
+}
+
+<#
+.SYNOPSIS
+    Installs a standard app using the configured package manager.
+#>
 function Install-StandardApp {
     param(
         [Parameter(Mandatory)][string]$AppId,
         [string]$DisplayName = $AppId
     )
 
-    # ── DryRun shortcut ──
+    # Get the appropriate package ID based on package manager
+    $packageId = $AppId
+    if ($AppId -eq $null -or $AppId -eq "") {
+        Write-Log "No package ID provided for $DisplayName" -Level ERROR
+        return $false
+    }
+
     if ($DryRun) {
-        Write-Log "[DRYRUN] Would install: $DisplayName ($AppId)" -Level INFO
+        Write-Log "[DRYRUN] Would install: $DisplayName ($packageId) via $PackageManager" -Level INFO
         Write-Host "  [DRYRUN] Simulating install of $DisplayName..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
         Write-Log "[DRYRUN] $DisplayName — simulated OK." -Level OK
         return $true
     }
 
-    # ── Step 1: Validate that the package ID exists in winget ──
+    switch ($PackageManager) {
+        "Winget" { return Install-WithWinget -AppId $packageId -DisplayName $DisplayName }
+        "Chocolatey" { return Install-WithChocolatey -PackageId $packageId -DisplayName $DisplayName }
+        default { 
+            Write-Log "Unknown package manager: $PackageManager" -Level ERROR
+            return $false 
+        }
+    }
+}
+
+function Install-WithWinget {
+    param(
+        [Parameter(Mandatory)][string]$AppId,
+        [string]$DisplayName = $AppId
+    )
+
+    # Validate that the package ID exists in winget
     $idValid = $true
     try {
         $searchCheck = winget show --id $AppId -e --accept-source-agreements 2>&1 | Out-String
@@ -351,9 +418,9 @@ function Install-StandardApp {
         $idValid = $false
     }
 
-    # ── Step 2: If ID is valid, install normally ──
+    # If ID is valid, install normally
     if ($idValid) {
-        return Invoke-Failsafe -Name "Install $DisplayName ($AppId)" -Action {
+        return Invoke-Failsafe -Name "Install $DisplayName ($AppId) via Winget" -Action {
             $result = winget install --id $AppId -e `
                 --accept-package-agreements `
                 --accept-source-agreements `
@@ -365,17 +432,12 @@ function Install-StandardApp {
         }
     }
 
-    # ── Step 3: ID is invalid — attempt fuzzy search by display name ──
+    # ID is invalid — attempt fuzzy search by display name
     Write-Log "Package ID '$AppId' not found in winget. Searching for '$DisplayName'..." -Level WARN
 
     $fallbackId = $null
     try {
-        # Search winget with the friendly display name
         $raw = winget search $DisplayName --accept-source-agreements 2>&1 | Out-String
-
-        # Parse search results — winget outputs a table with columns:
-        #   Name  Id  Version  Source
-        # We extract lines that look like package entries (contain a dot in the ID column)
         $lines = $raw -split "`n" | Where-Object { $_ -match '\S+\.\S+' -and $_ -notmatch '^-|^Name\s' }
 
         if ($lines.Count -eq 0) {
@@ -383,10 +445,8 @@ function Install-StandardApp {
             return $false
         }
 
-        # Parse up to 5 results
         $foundApps = @()
         foreach ($line in ($lines | Select-Object -First 5)) {
-            # Winget output is column-aligned; split on 2+ spaces
             $parts = ($line.Trim() -split '\s{2,}') | Where-Object { $_ -ne '' }
             if ($parts.Count -ge 2) {
                 $foundApps += [pscustomobject]@{
@@ -439,9 +499,9 @@ function Install-StandardApp {
         return $false
     }
 
-    # ── Step 4: Install the fallback package ──
+    # Install the fallback package
     if ($fallbackId) {
-        return Invoke-Failsafe -Name "Install $DisplayName (fallback: $fallbackId)" -Action {
+        return Invoke-Failsafe -Name "Install $DisplayName (fallback: $fallbackId) via Winget" -Action {
             $result = winget install --id $fallbackId -e `
                 --accept-package-agreements `
                 --accept-source-agreements `
@@ -455,6 +515,106 @@ function Install-StandardApp {
     
     return $false
 }
+
+function Install-WithChocolatey {
+    param(
+        [Parameter(Mandatory)][string]$PackageId,
+        [string]$DisplayName = $PackageId
+    )
+
+    # First check if package exists in Chocolatey repository
+    $exists = $false
+    try {
+        $searchResult = choco search $PackageId --exact --limit-output 2>&1 | Out-String
+        if ($searchResult -match "^$PackageId\|") {
+            $exists = $true
+        }
+    }
+    catch {
+        $exists = $false
+    }
+
+    if (-not $exists) {
+        Write-Log "Package '$PackageId' not found in Chocolatey repository. Attempting search..." -Level WARN
+        
+        try {
+            $searchResult = choco search $PackageId --limit-output 2>&1 | Out-String
+            $lines = $searchResult -split "`n" | Where-Object { $_ -match "^\S+\|" } | Select-Object -First 5
+            
+            if ($lines.Count -eq 0) {
+                Write-Log "No alternatives found in Chocolatey for '$PackageId'. Skipping." -Level ERROR
+                return $false
+            }
+
+            $foundPackages = @()
+            foreach ($line in $lines) {
+                $parts = $line -split "\|"
+                if ($parts.Count -ge 2) {
+                    $foundPackages += [pscustomobject]@{
+                        Id      = $parts[0]
+                        Version = $parts[1]
+                    }
+                }
+            }
+
+            if ($foundPackages.Count -eq 0) {
+                Write-Log "Could not parse Chocolatey search results. Skipping." -Level ERROR
+                return $false
+            }
+
+            Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+            Write-Host "║  PACKAGE NOT FOUND — '$PackageId'" -ForegroundColor Yellow
+            Write-Host "║  Closest matches in Chocolatey:" -ForegroundColor Yellow
+            Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+
+            for ($i = 0; $i -lt $foundPackages.Count; $i++) {
+                $entry = "  [$($i+1)] $($foundPackages[$i].Id)  (v$($foundPackages[$i].Version))"
+                Write-Host ("║" + $entry.PadRight(58) + "║") -ForegroundColor White
+            }
+
+            Write-Host ("║  [S] Skip this app".PadRight(59) + "║") -ForegroundColor DarkGray
+            Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+
+            Write-Host "Pick a number (1-$($foundPackages.Count)) or [S] to skip: " -NoNewline -ForegroundColor Cyan
+
+            while ($true) {
+                $pick = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
+                if ($pick -eq 'S') {
+                    Write-Host "S" -ForegroundColor Red
+                    Write-Log "User skipped fallback for '$DisplayName'." -Level WARN
+                    return $false
+                }
+                $num = 0
+                if ([int]::TryParse($pick, [ref]$num) -and $num -ge 1 -and $num -le $foundPackages.Count) {
+                    Write-Host $pick -ForegroundColor Green
+                    $PackageId = $foundPackages[$num - 1].Id
+                    Write-Log "User chose Chocolatey package: $PackageId" -Level INFO
+                    break
+                }
+            }
+        }
+        catch {
+            Write-Log "Chocolatey search failed: $($_.Exception.Message)" -Level ERROR
+            return $false
+        }
+    }
+
+    # Install the package
+    return Invoke-Failsafe -Name "Install $DisplayName ($PackageId) via Chocolatey" -Action {
+        $result = choco install $PackageId -y --no-progress 2>&1
+        
+        if ($LASTEXITCODE -ne 0 -and $result -notmatch "already installed|is already installed") {
+            throw "Chocolatey exited with code $LASTEXITCODE. Output: $result"
+        }
+    }
+}
+
+#endregion PackageManager
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REGION: Core Application Installers
+# ═══════════════════════════════════════════════════════════════════════════════
+#region CoreInstallers
 
 function Install-TightVNC {
     Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
@@ -488,7 +648,6 @@ function Install-TightVNC {
         }
     }
 
-    # If password mode, ask for it
     if ($vncMode -eq "Password") {
         Write-Host "Note: TightVNC limits passwords to 8 characters." -ForegroundColor Yellow
         $securePass = Read-Host -AsSecureString "Enter VNC password"
@@ -501,58 +660,67 @@ function Install-TightVNC {
         }
     }
 
-    # ── DryRun shortcut ──
     if ($DryRun) {
-        Write-Log "[DRYRUN] Would install TightVNC: mode=$vncMode, server-only, no tray, file-transfer ON, RDP session, local input blocked." -Level INFO
+        Write-Log "[DRYRUN] Would install TightVNC: mode=$vncMode via $PackageManager" -Level INFO
         Write-Host "  [DRYRUN] Simulating TightVNC install..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
         Write-Log "[DRYRUN] TightVNC — simulated OK." -Level OK
         return $true
     }
 
-    return Invoke-Failsafe -Name "Install TightVNC ($vncMode)" -Action {
-        # Base flags — always applied
+    # Get package ID based on package manager
+    $vncPackageId = if ($PackageManager -eq "Chocolatey") { "tightvnc" } else { "TightVNC.TightVNC" }
+    
+    # For Chocolatey, we need to handle TightVNC differently (no MSI overrides)
+    if ($PackageManager -eq "Chocolatey") {
+        return Invoke-Failsafe -Name "Install TightVNC ($vncMode) via Chocolatey" -Action {
+            # Chocolatey tightvnc package uses installer arguments
+            $installArgs = "/quiet /norestart ADDLOCAL=Server"
+            
+            if ($vncMode -eq "NoAuth") {
+                $installArgs += " SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=0"
+            }
+            else {
+                $installArgs += " SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=$vncPassword"
+            }
+            
+            $result = choco install tightvnc -y --no-progress --install-arguments="'$installArgs'" 2>&1
+            
+            if ($LASTEXITCODE -ne 0) {
+                throw "Chocolatey TightVNC install failed with code $LASTEXITCODE"
+            }
+            
+            Write-Log "TightVNC installed via Chocolatey: mode=$vncMode" -Level OK
+        }
+    }
+
+    # Winget installation with MSI overrides
+    return Invoke-Failsafe -Name "Install TightVNC ($vncMode) via Winget" -Action {
         $overrideParts = @(
             "/quiet"
             "/norestart"
             "ADDLOCAL=Server"
-
-            # Control-interface auth (admin panel) → OFF
             "SET_USECONTROLAUTHENTICATION=1"
             "VALUE_OF_USECONTROLAUTHENTICATION=0"
-
-            # HTTP Java viewer → OFF
             "SET_ACCEPTHTTPCONNECTIONS=1"
             "VALUE_OF_ACCEPTHTTPCONNECTIONS=0"
-
-            # Keep desktop wallpaper visible
             "SET_REMOVEWALLPAPER=1"
             "VALUE_OF_REMOVEWALLPAPER=0"
-
-            # Enable file transfer
             "SET_ENABLEFILETRANSFERS=1"
             "VALUE_OF_ENABLEFILETRANSFERS=1"
-
-            # Connect to console/RDP session
             "SET_CONNECTTOREMOTESESSION=1"
             "VALUE_OF_CONNECTTOREMOTESESSION=1"
-
-            # No system-tray icon
             "SET_RUNCONTROLINTERFACE=1"
             "VALUE_OF_RUNCONTROLINTERFACE=0"
-
-            # Block local keyboard/mouse during remote session
             "SET_BLOCKLOCALINPUT=1"
             "VALUE_OF_BLOCKLOCALINPUT=1"
         )
 
         if ($vncMode -eq "NoAuth") {
-            # VNC authentication → OFF  (no password required)
             $overrideParts += "SET_USEVNCAUTHENTICATION=1"
             $overrideParts += "VALUE_OF_USEVNCAUTHENTICATION=0"
         }
         else {
-            # VNC authentication → ON with user-supplied password
             $overrideParts += "SET_USEVNCAUTHENTICATION=1"
             $overrideParts += "VALUE_OF_USEVNCAUTHENTICATION=1"
             $overrideParts += "SET_PASSWORD=1"
@@ -578,21 +746,31 @@ function Install-TightVNC {
 
 function Install-ZeroTier-AutoJoin {
     if ($DryRun) {
-        Write-Log "[DRYRUN] Would install ZeroTier One and join network $ZeroTierNetworkId" -Level INFO
+        Write-Log "[DRYRUN] Would install ZeroTier One and join network $ZeroTierNetworkId via $PackageManager" -Level INFO
         Write-Host "  [DRYRUN] Simulating ZeroTier install + network join..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
         Write-Log "[DRYRUN] ZeroTier — simulated OK." -Level OK
         return $true
     }
 
-    $installOk = Invoke-Failsafe -Name "Install ZeroTier One" -Action {
-        winget install --id ZeroTier.ZeroTierOne -e `
-            --accept-package-agreements `
-            --accept-source-agreements `
-            --silent
+    $packageId = if ($PackageManager -eq "Chocolatey") { "zerotier-one" } else { "ZeroTier.ZeroTierOne" }
 
-        if ($LASTEXITCODE -ne 0) {
-            throw "ZeroTier winget install exited with code $LASTEXITCODE"
+    $installOk = Invoke-Failsafe -Name "Install ZeroTier One via $PackageManager" -Action {
+        if ($PackageManager -eq "Chocolatey") {
+            $result = choco install zerotier-one -y --no-progress 2>&1
+            if ($LASTEXITCODE -ne 0 -and $result -notmatch "already installed") {
+                throw "Chocolatey ZeroTier install exited with code $LASTEXITCODE"
+            }
+        }
+        else {
+            winget install --id ZeroTier.ZeroTierOne -e `
+                --accept-package-agreements `
+                --accept-source-agreements `
+                --silent
+
+            if ($LASTEXITCODE -ne 0) {
+                throw "ZeroTier winget install exited with code $LASTEXITCODE"
+            }
         }
     }
 
@@ -602,7 +780,6 @@ function Install-ZeroTier-AutoJoin {
         Write-Log "Waiting 8 seconds for ZeroTier service to initialize..." -Level INFO
         Start-Sleep -Seconds 8
 
-        # Try the ProgramData CLI path first, fall back to PATH
         $ztCliPath = "C:\ProgramData\ZeroTier\One\zerotier-cli.bat"
         if (Test-Path $ztCliPath) {
             $joinOutput = & $ztCliPath join $ZeroTierNetworkId 2>&1
@@ -618,7 +795,7 @@ function Install-ZeroTier-AutoJoin {
     }
 }
 
-#endregion Core Operations
+#endregion CoreInstallers
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # REGION: Repair & Security Tools
@@ -628,21 +805,11 @@ function Install-ZeroTier-AutoJoin {
 <#
 .SYNOPSIS
     Repairs or installs winget with all dependencies.
-    Downloads the full dependency package from Microsoft and installs:
-    - Windows App Runtime 1.8
-    - VCLibs dependencies
-    - Microsoft.DesktopAppInstaller (winget)
-    
-    This is useful when winget is missing, broken, or has dependency errors.
 #>
 function Repair-WingetFull {
     if ($DryRun) {
         Write-Log "[DRYRUN] Would repair winget with full dependencies" -Level INFO
         Write-Host "`n  [DRYRUN] Simulating winget repair..." -ForegroundColor Yellow
-        Write-Host "  Would download and install:" -ForegroundColor DarkGray
-        Write-Host "    - Windows App Runtime 1.8" -ForegroundColor DarkGray
-        Write-Host "    - VCLibs dependencies" -ForegroundColor DarkGray
-        Write-Host "    - Microsoft.DesktopAppInstaller (winget)" -ForegroundColor DarkGray
         Start-Sleep -Seconds 2
         Write-Log "[DRYRUN] Winget repair simulated OK." -Level OK
         return $true
@@ -676,7 +843,6 @@ function Repair-WingetFull {
         $ProgressPreference = 'SilentlyContinue'
 
         try {
-            # Get latest release info from GitHub API
             Write-Log "Fetching latest winget release information..." -Level INFO
             $apiUrl = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
             $release = Invoke-RestMethod -Uri $apiUrl -UseBasicParsing
@@ -684,7 +850,6 @@ function Repair-WingetFull {
             $tagName = $release.tag_name
             Write-Log "Latest release: $tagName" -Level INFO
 
-            # Find the msixbundle, dependencies zip, and license file URLs
             $msixBundleUrl = $release.assets | Where-Object { $_.name -like "*.msixbundle" } | Select-Object -ExpandProperty browser_download_url -First 1
             $depsZipUrl = $release.assets | Where-Object { $_.name -like "*Dependencies*.zip" } | Select-Object -ExpandProperty browser_download_url -First 1
             $licenseUrl = $release.assets | Where-Object { $_.name -like "*License*.xml" } | Select-Object -ExpandProperty browser_download_url -First 1
@@ -695,14 +860,12 @@ function Repair-WingetFull {
 
             Write-Log "Found MSIX bundle: $msixBundleUrl" -Level INFO
 
-            # Download dependencies if available
             if ($depsZipUrl) {
                 Write-Log "Downloading dependencies package..." -Level INFO
                 $depsZip = "$tempDir\dependencies.zip"
                 Invoke-WebRequest -Uri $depsZipUrl -OutFile $depsZip -UseBasicParsing
                 Expand-Archive -Path $depsZip -DestinationPath $tempDir -Force
 
-                # Install x64 dependencies
                 $x64Dir = Join-Path $tempDir "x64"
                 if (Test-Path $x64Dir) {
                     $deps = Get-ChildItem -Path $x64Dir -Filter "*.appx" -ErrorAction SilentlyContinue | Sort-Object Name
@@ -720,7 +883,6 @@ function Repair-WingetFull {
             }
             else {
                 Write-Log "No dependencies package found, attempting to install VCLibs directly..." -Level WARN
-                # Fallback: Install VCLibs directly from aka.ms
                 $vcLibsUrl = "https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx"
                 $vcLibsPath = "$tempDir\Microsoft.VCLibs.x64.14.00.Desktop.appx"
                 try {
@@ -733,15 +895,12 @@ function Repair-WingetFull {
                 }
             }
 
-            # Download winget MSIX bundle
             Write-Log "Downloading Microsoft.DesktopAppInstaller..." -Level INFO
             $wingetBundle = "$tempDir\winget.msixbundle"
             Invoke-WebRequest -Uri $msixBundleUrl -OutFile $wingetBundle -UseBasicParsing
 
-            # Install winget
             Write-Log "Installing Microsoft.DesktopAppInstaller (winget)..." -Level INFO
             
-            # Try standard install first (works on Windows 10/11 with proper dependencies)
             try {
                 Add-AppxPackage -Path $wingetBundle -ErrorAction Stop
                 Write-Log "  ✓ Winget installed successfully" -Level OK
@@ -749,13 +908,11 @@ function Repair-WingetFull {
             catch {
                 Write-Log "Standard install failed, attempting provisioned package install..." -Level WARN
                 
-                # Try provisioned package with SkipLicense (works on newer Windows versions)
                 try {
                     Add-AppxProvisionedPackage -Online -PackagePath $wingetBundle -SkipLicense -ErrorAction Stop | Out-Null
                     Write-Log "  ✓ Winget installed as provisioned package (SkipLicense)" -Level OK
                 }
                 catch {
-                    # If SkipLicense fails, try with license file if available
                     if ($licenseUrl) {
                         Write-Log "Attempting install with license file..." -Level WARN
                         $licenseFile = "$tempDir\license.xml"
@@ -769,12 +926,9 @@ function Repair-WingetFull {
                 }
             }
 
-            # Refresh PATH
-            Write-Log "Refreshing environment PATH..." -Level INFO
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
             [System.Environment]::GetEnvironmentVariable("Path", "User")
 
-            # Verify installation
             $wingetCmd = Get-Command winget -ErrorAction SilentlyContinue
             if ($wingetCmd) {
                 $version = winget --version 2>$null
@@ -782,26 +936,141 @@ function Repair-WingetFull {
             }
             else {
                 Write-Log "Winget command not found in PATH immediately. You may need to restart PowerShell." -Level WARN
-                # Try to find it manually
-                $possiblePaths = @(
-                    "$env:LocalAppData\Microsoft\WindowsApps\winget.exe",
-                    "C:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*\winget.exe"
-                )
-                foreach ($path in $possiblePaths) {
-                    $found = Get-Item $path -ErrorAction SilentlyContinue | Select-Object -First 1
-                    if ($found) {
-                        Write-Log "Found winget at: $($found.FullName)" -Level INFO
-                        break
-                    }
-                }
             }
         }
         finally {
-            # Cleanup
             if (Test-Path $tempDir) {
                 Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
                 Write-Log "Cleaned up temporary files" -Level INFO
             }
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+    Repairs or reinstalls Chocolatey.
+#>
+function Repair-ChocolateyFull {
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would repair/reinstall Chocolatey" -Level INFO
+        Write-Host "`n  [DRYRUN] Simulating Chocolatey repair..." -ForegroundColor Yellow
+        Start-Sleep -Seconds 2
+        Write-Log "[DRYRUN] Chocolatey repair simulated OK." -Level OK
+        return $true
+    }
+
+    Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║         CHOCOLATEY REPAIR & INSTALLATION                 ║" -ForegroundColor Cyan
+    Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+    Write-Host "║  This will:                                              ║" -ForegroundColor White
+    Write-Host "║    • Uninstall existing Chocolatey (if corrupt)          ║" -ForegroundColor White
+    Write-Host "║    • Reinstall Chocolatey from official source           ║" -ForegroundColor White
+    Write-Host "║    • Update environment PATH                               ║" -ForegroundColor White
+    Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+    Write-Host "`nProceed with Chocolatey repair? (Y/N): " -NoNewline -ForegroundColor Yellow
+    $confirm = $null
+    while ($true) {
+        $k = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
+        if ($k -eq 'Y') { Write-Host "Y" -ForegroundColor Green; $confirm = $true; break }
+        if ($k -eq 'N') { Write-Host "N" -ForegroundColor Red; $confirm = $false; break }
+    }
+
+    if (-not $confirm) {
+        Write-Log "Chocolatey repair cancelled by user." -Level WARN
+        return $false
+    }
+
+    return Invoke-Failsafe -Name "Repair Chocolatey (Full Installation)" -Action {
+        # Check if Chocolatey exists and try to uninstall first if corrupt
+        $chocoPath = "$env:ProgramData\chocolatey"
+        if (Test-Path $chocoPath) {
+            Write-Log "Existing Chocolatey installation found. Attempting cleanup..." -Level WARN
+            try {
+                # Try to uninstall using existing choco if it works
+                if (Get-Command choco -ErrorAction SilentlyContinue) {
+                    choco uninstall chocolatey -y 2>&1 | Out-Null
+                }
+                # Remove leftover files
+                Remove-Item $chocoPath -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Log "Cleaned up existing Chocolatey installation" -Level OK
+            }
+            catch {
+                Write-Log "Could not fully cleanup existing installation: $($_.Exception.Message)" -Level WARN
+            }
+        }
+
+        Write-Log "Installing Chocolatey from official source..." -Level INFO
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
+        [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+        # Verify installation
+        $chocoCmd = Get-Command choco -ErrorAction SilentlyContinue
+        if ($chocoCmd) {
+            $version = choco --version 2>$null
+            Write-Log "Chocolatey verified: v$version at $($chocoCmd.Source)" -Level OK
+        }
+        else {
+            throw "Chocolatey installation verification failed"
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+    Switches between Winget and Chocolatey package managers.
+#>
+function Switch-PackageManager {
+    Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║         SWITCH PACKAGE MANAGER                           ║" -ForegroundColor Cyan
+    Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+    Write-Host "║  Current package manager: $PackageManager" -ForegroundColor Yellow
+    Write-Host "║                                                          ║" -ForegroundColor White
+    Write-Host "║  [1] Switch to Winget (Microsoft)                        ║" -ForegroundColor White
+    Write-Host "║  [2] Switch to Chocolatey (Community)                  ║" -ForegroundColor White
+    Write-Host "║  [S] Keep current setting                                ║" -ForegroundColor DarkGray
+    Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+    Write-Host "`nSelect package manager (1/2/S): " -NoNewline -ForegroundColor Yellow
+    
+    while ($true) {
+        $pick = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
+        
+        if ($pick -eq '1') {
+            Write-Host "1 - Winget" -ForegroundColor Green
+            if ($PackageManager -ne "Winget") {
+                $script:PackageManager = "Winget"
+                Write-Log "Package manager switched to: Winget" -Level OK
+                Write-Host "`n  Note: Winget will be used for all future installations." -ForegroundColor Cyan
+                Write-Host "  Run 'Repair/Install Winget + Dependencies' if needed." -ForegroundColor Yellow
+            }
+            else {
+                Write-Log "Package manager already set to Winget" -Level INFO
+            }
+            return $true
+        }
+        elseif ($pick -eq '2') {
+            Write-Host "2 - Chocolatey" -ForegroundColor Green
+            if ($PackageManager -ne "Chocolatey") {
+                $script:PackageManager = "Chocolatey"
+                Write-Log "Package manager switched to: Chocolatey" -Level OK
+                Write-Host "`n  Note: Chocolatey will be used for all future installations." -ForegroundColor Cyan
+                Write-Host "  Run 'Repair/Install Chocolatey' if needed." -ForegroundColor Yellow
+            }
+            else {
+                Write-Log "Package manager already set to Chocolatey" -Level INFO
+            }
+            return $true
+        }
+        elseif ($pick -eq 'S') {
+            Write-Host "S - Keep current" -ForegroundColor DarkGray
+            Write-Log "Package manager switch cancelled. Current: $PackageManager" -Level INFO
+            return $false
         }
     }
 }
@@ -823,7 +1092,6 @@ function Set-TemporaryCloudflareDNS {
         Clear-DnsClientCache
         Write-Log "Cloudflare DNS applied to '$($adapter.InterfaceAlias)'. Will revert on menu exit." -Level OK
 
-        # Store in script scope so the menu loop can revert it
         $script:TempDnsAdapter = $adapter
     }
 }
@@ -892,7 +1160,6 @@ function Invoke-DISM-WithProxy {
 
         DISM /Online /Cleanup-Image /RestoreHealth
 
-        # Always clean up proxy settings, even if DISM failed
         $env:HTTP_PROXY = ""
         $env:HTTPS_PROXY = ""
         netsh winhttp reset proxy | Out-Null
@@ -983,7 +1250,8 @@ function Invoke-KVRT {
 #region Main
 
 Write-Log ("=" * 60) -Level INFO
-Write-Log "OMNITX Setup v3.1.0 — Session started." -Level INFO
+Write-Log "OMNITX Setup v$ScriptVersion — Session started." -Level INFO
+Write-Log "Package Manager: $PackageManager" -Level INFO
 if ($DryRun) { Write-Log "DRY RUN MODE ENABLED — No changes will be made" -Level WARN }
 Write-Log ("=" * 60) -Level INFO
 
@@ -1012,8 +1280,8 @@ while ($true) {
     # ══════════════════════════════════════════════════════════════════════════
     if ($selectedMain -eq "Apps") {
 
-        # Step 1: Ensure winget is available
-        Assert-Winget
+        # Step 1: Ensure package manager is available
+        Assert-PackageManager
 
         # ── Counters for final report ──
         $successCount = 0
@@ -1023,6 +1291,7 @@ while ($true) {
 
         Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
         Write-Host "║          APP INSTALLER — One by One                      ║" -ForegroundColor Cyan
+        Write-Host "║  Package Manager: $PackageManager" -ForegroundColor Yellow
         Write-Host "║  [Y] Install   [N] Skip   [ESC] Abort remaining          ║" -ForegroundColor Cyan
         Write-Host "╚══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
@@ -1040,9 +1309,12 @@ while ($true) {
                 default { "" }
             }
 
+            # Get the appropriate package ID
+            $packageId = if ($PackageManager -eq "Chocolatey") { $app.ChocoId } else { $app.WingetId }
+
             Write-Host ("─" * 60) -ForegroundColor DarkGray
             Write-Host "  [$num/$total]  $($app.Display)$tag" -ForegroundColor White
-            Write-Host "          Package: $($app.Id)" -ForegroundColor DarkGray
+            Write-Host "          Package: $packageId ($PackageManager)" -ForegroundColor DarkGray
             Write-Host "  Install? [Y/N/ESC]: " -NoNewline -ForegroundColor Yellow
 
             $decision = $null
@@ -1077,7 +1349,7 @@ while ($true) {
             # ── Install based on Type ──
             switch ($app.Type) {
                 "Standard" {
-                    $ok = Install-StandardApp -AppId $app.Id -DisplayName $app.Display
+                    $ok = Install-StandardApp -AppId $packageId -DisplayName $app.Display
                     if ($ok) { $successCount++ } else { $failCount++ }
                 }
                 "VNC" {
@@ -1097,7 +1369,7 @@ while ($true) {
         # Step 3: Offer custom app installation
         if (-not $aborted) {
             Write-Host ("─" * 60) -ForegroundColor DarkGray
-            Write-Host "`n  Install custom winget packages? [Y/N]: " -NoNewline -ForegroundColor Magenta
+            Write-Host "`n  Install custom packages via $PackageManager? [Y/N]: " -NoNewline -ForegroundColor Magenta
             $doCustom = $false
             while ($true) {
                 $ck = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
@@ -1106,10 +1378,11 @@ while ($true) {
             }
 
             if ($doCustom) {
-                Write-Host "--- Custom Application Installation ---`n" -ForegroundColor Cyan
+                Write-Host "--- Custom Application Installation ($PackageManager) ---`n" -ForegroundColor Cyan
                 $installMore = $true
                 while ($installMore) {
-                    $customApp = Read-Host "Enter the winget package ID (e.g., Mozilla.Firefox)"
+                    $promptText = if ($PackageManager -eq "Chocolatey") { "Enter the Chocolatey package ID (e.g., firefox)" } else { "Enter the winget package ID (e.g., Mozilla.Firefox)" }
+                    $customApp = Read-Host $promptText
                     if (![string]::IsNullOrWhiteSpace($customApp)) {
                         $ok = Install-StandardApp -AppId $customApp -DisplayName $customApp
                         if ($ok) { $successCount++ } else { $failCount++ }
@@ -1128,12 +1401,13 @@ while ($true) {
         Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
         Write-Host "║                  INSTALLATION REPORT                     ║" -ForegroundColor Cyan
         Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-        Write-Host ("║  Succeeded : $successCount".PadRight(58) + "║") -ForegroundColor Green
-        Write-Host ("║  Skipped   : $skippedCount".PadRight(58) + "║") -ForegroundColor DarkGray
-        Write-Host ("║  Failed    : $failCount".PadRight(58) + "║") -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
-        Write-Host ("║  Log File  : $LogFile".PadRight(58) + "║") -ForegroundColor Yellow
+        Write-Host ("║  Package Manager : $PackageManager".PadRight(58) + "║") -ForegroundColor Yellow
+        Write-Host ("║  Succeeded       : $successCount".PadRight(58) + "║") -ForegroundColor Green
+        Write-Host ("║  Skipped         : $skippedCount".PadRight(58) + "║") -ForegroundColor DarkGray
+        Write-Host ("║  Failed          : $failCount".PadRight(58) + "║") -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
+        Write-Host ("║  Log File        : $LogFile".PadRight(58) + "║") -ForegroundColor Yellow
         if ($DryRun) {
-            Write-Host ("║  Mode      : DRY RUN (no changes made)".PadRight(58) + "║") -ForegroundColor Yellow
+            Write-Host ("║  Mode            : DRY RUN (no changes made)".PadRight(58) + "║") -ForegroundColor Yellow
         }
         Write-Host "╚══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
@@ -1151,7 +1425,9 @@ while ($true) {
 
         while ($true) {
             $fixItems = @(
+                [pscustomobject]@{ Display = "Switch Package Manager (Winget ↔ Chocolatey)"; Id = "SWITCH_PM"; Selected = $false }
                 [pscustomobject]@{ Display = "Repair/Install Winget + Dependencies"; Id = "WINGET_REPAIR"; Selected = $false }
+                [pscustomobject]@{ Display = "Repair/Install Chocolatey"; Id = "CHOCO_REPAIR"; Selected = $false }
                 [pscustomobject]@{ Display = "Temporarily apply Cloudflare DNS (1.1.1.1)"; Id = "CF_DNS"; Selected = $false }
                 [pscustomobject]@{ Display = "SFC /Scannow (System File Checker)"; Id = "SFC"; Selected = $false }
                 [pscustomobject]@{ Display = "DISM /RestoreHealth (Standard, No Proxy)"; Id = "DISM"; Selected = $false }
@@ -1164,14 +1440,16 @@ while ($true) {
             $fixChoice = Show-Menu -Title "Windows Repair & Security (Enter to run action)" -MenuItems $fixItems -SingleSelect
 
             if ($fixChoice -eq "ESC" -or $fixChoice -eq "BACK") {
-                Restore-DNS   # revert temporary DNS if it was set
+                Restore-DNS
                 break
             }
 
             $selectedAction = ($fixChoice | Where-Object { $_.Selected }).Id
 
             switch ($selectedAction) {
+                "SWITCH_PM" { Switch-PackageManager }
                 "WINGET_REPAIR" { Repair-WingetFull }
+                "CHOCO_REPAIR" { Repair-ChocolateyFull }
                 "CF_DNS" { Set-TemporaryCloudflareDNS }
                 "SFC" { Invoke-SFC }
                 "DISM" { Invoke-DISM }
