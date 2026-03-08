@@ -197,6 +197,36 @@ function getLanguageColor(lang) {
     return colors[lang] || '#cccccc';
 }
 
+// --- Setup Script Copy Button ---
+function copySetupCommand() {
+    const command = 'Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-RestMethod -Uri https://omnitx.github.io/setup | Invoke-Expression';
+    const btnText = document.getElementById('setup-btn-text');
+    const btn = document.getElementById('setup-btn');
+
+    navigator.clipboard.writeText(command).then(() => {
+        btnText.textContent = 'Copied!';
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.color = 'var(--accent)';
+        setTimeout(() => {
+            btnText.textContent = 'Setup Script';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        }, 2000);
+    }).catch(() => {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = command;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btnText.textContent = 'Copied!';
+        setTimeout(() => { btnText.textContent = 'Setup Script'; }, 2000);
+    });
+}
+
 // --- Initialization ---
 // 1. Set dynamic year
 document.getElementById('footer-year').textContent = new Date().getFullYear();
