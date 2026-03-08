@@ -73,8 +73,7 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 # --- DryRun Mode ---
 # Set to $true to test the full UI without installing anything.
 # All winget commands are simulated. Menus, prompts, and logging work normally.
-#$DryRun = $false
-$DryRun = $true    # ← flip this
+$DryRun = $false
 
 # --- ZeroTier ---
 $ZeroTierNetworkId = "17d709436c5d1c9e"                     # Network to auto-join
