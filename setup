@@ -1,9 +1,6 @@
-#requires -Version 5.1
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
 <#
 .SYNOPSIS
-    OMNITX Setup Script — Automated Windows provisioning tool.
+    OMNITX Setup Script - Automated Windows provisioning tool.
 
 .DESCRIPTION
     One-command setup script for provisioning Windows machines in a home/lab
@@ -14,35 +11,35 @@ $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
 
     Features
     --------
-    • One-by-one app installation with Y/N/ESC per app
-    • Winget-based installation with auto-fallback if package IDs change
-    • TightVNC: server-only, no tray, no start menu, file transfer,
+    * One-by-one app installation with Y/N/ESC per app
+    * Winget-based installation with auto-fallback if package IDs change
+    * TightVNC: server-only, no tray, no start menu, file transfer,
       RDP session, local input blocked, no-auth or password mode
-    • ZeroTier auto-join to a pre-configured network
-    • Windows repair toolkit (SFC, DISM, DNS, KVRT, Massgrave, WinUtil)
-    • Custom winget package installation loop
-    • Per-operation try/catch failsafe — one failure never kills the script
-    • Timestamped log file on the Desktop for every session
-    • DryRun mode for testing UI without installing anything
+    * ZeroTier auto-join to a pre-configured network
+    * Windows repair toolkit (SFC, DISM, DNS, KVRT, Massgrave, WinUtil)
+    * Custom winget package installation loop
+    * Per-operation try/catch failsafe - one failure never kills the script
+    * Timestamped log file on the Desktop for every session
+    * DryRun mode for testing UI without installing anything
 
 .NOTES
     Author  : OMNITX
     Updated : 2026-03-08
     License : MIT
-    Version : 3.0.1
+    Version : 3.0.2
 
     CONFIGURATION
-    ─────────────
+    -------------
     All user-editable values live in the "Configuration" region below.
     Change the ZeroTier network ID, app list, log path, etc. there.
 
     LOGGING
-    ───────
+    -------
     Every action is logged to  %USERPROFILE%\Desktop\OMNITX_Setup_Log.txt
     with ISO-8601 timestamps and severity levels (INFO / WARN / ERROR / OK).
 
     ERROR HANDLING
-    ──────────────
+    --------------
     Each discrete operation (app install, ZeroTier join, repair command, etc.)
     is wrapped in its own try/catch block. If something fails:
       1. The error is logged.
@@ -50,6 +47,8 @@ $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
       3. Execution continues with the next operation.
     The script will NEVER crash out because of a single failed step.
 #>
+
+#requires -Version 5.1
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # REGION: Execution Policy & Admin Elevation
@@ -90,9 +89,9 @@ $LogFile = Join-Path ([Environment]::GetFolderPath("Desktop")) "OMNITX_Setup_Log
 # tag that controls special post-install behavior.
 #
 #   Type values:
-#     Standard  – installed silently via winget, no extra steps
-#     VNC       – TightVNC with full configuration prompt
-#     ZeroTier  – installed then auto-joined to $ZeroTierNetworkId
+#     Standard  - installed silently via winget, no extra steps
+#     VNC       - TightVNC with full configuration prompt
+#     ZeroTier  - installed then auto-joined to $ZeroTierNetworkId
 #
 # Apps are presented ONE BY ONE. The user confirms each individually.
 #
@@ -116,21 +115,6 @@ $AppCatalog = @(
 # ═══════════════════════════════════════════════════════════════════════════════
 #region Logging
 
-<#
-.SYNOPSIS
-    Writes a timestamped, leveled message to the log file AND the console.
-
-.PARAMETER Message
-    The text to log.
-
-.PARAMETER Level
-    Severity: INFO (default), WARN, ERROR, OK.
-
-.EXAMPLE
-    Write-Log "Installing 7-Zip..." -Level INFO
-    Write-Log "7-Zip installed successfully." -Level OK
-    Write-Log "Failed to install app." -Level ERROR
-#>
 function Write-Log {
     param(
         [Parameter(Mandatory)][string]$Message,
@@ -155,49 +139,23 @@ function Write-Log {
 # ═══════════════════════════════════════════════════════════════════════════════
 #region Helpers
 
-<#
-.SYNOPSIS
-    Runs a script block inside a try/catch. Logs success or failure and
-    continues regardless of the outcome.
-
-.PARAMETER Name
-    Human-readable label for the operation (used in log messages).
-
-.PARAMETER Action
-    The script block to execute.
-
-.OUTPUTS
-    $true if the action succeeded, $false otherwise.
-
-.EXAMPLE
-    Invoke-Failsafe -Name "Install 7-Zip" -Action {
-        winget install --id 7zip.7zip -e --silent ...
-    }
-#>
 function Invoke-Failsafe {
     param(
         [Parameter(Mandatory)][string]$Name,
         [Parameter(Mandatory)][scriptblock]$Action
     )
     try {
-        Write-Log "START  ▸ $Name" -Level INFO
+        Write-Log "START  > $Name" -Level INFO
         & $Action
-        Write-Log "DONE   ✓ $Name" -Level OK
+        Write-Log "DONE   [OK] $Name" -Level OK
         return $true
     }
     catch {
-        Write-Log "FAILED ✗ $Name — $($_.Exception.Message)" -Level ERROR
+        Write-Log "FAILED [X] $Name - $($_.Exception.Message)" -Level ERROR
         return $false
     }
 }
 
-<#
-.SYNOPSIS
-    Displays the animated OMNITX ASCII banner.
-
-.PARAMETER Color
-    The foreground color for the banner text.
-#>
 function Show-Banner {
     param([string]$Color = "Cyan")
 
@@ -211,32 +169,10 @@ function Show-Banner {
     foreach ($l in $lines) { Write-Host $l -ForegroundColor $Color }
     Write-Host "`nRunning with Administrator privileges.`n" -ForegroundColor Green
     if ($DryRun) {
-        Write-Host "  ██████  DRY RUN MODE — Nothing will be installed  ██████`n" -ForegroundColor Yellow
+        Write-Host "  [DRY RUN MODE] Nothing will be installed`n" -ForegroundColor Yellow
     }
 }
 
-<#
-.SYNOPSIS
-    Universal interactive menu with arrow-key navigation, multi-select
-    (spacebar), single-select (enter), and escape/back support.
-
-.PARAMETER Title
-    Header text shown above the menu.
-
-.PARAMETER MenuItems
-    Array of PSCustomObjects. Required properties:
-      - Display   [string]  : Label shown in menu
-      - Selected  [bool]    : Whether the item is pre-selected
-    Optional properties:
-      - Installed [bool]    : If true, item shown in green with √
-      - Id        [string]  : Identifier returned to caller
-
-.PARAMETER SingleSelect
-    When set, only the highlighted item is selected on Enter.
-
-.OUTPUTS
-    The (possibly mutated) $MenuItems array, or the strings "ESC" / "BACK".
-#>
 function Show-Menu {
     param(
         [string]$Title,
@@ -290,10 +226,9 @@ function Show-Menu {
                         $MenuItems | ForEach-Object { $_.Selected = $false }
                         $MenuItems[$cursor].Selected = $true
                     }
-                    break  # exits inner while
+                    break
                 }
             }
-            # 'Enter' also needs to exit the outer while
             if ($key.Key -eq 'Enter') { break }
         }
 
@@ -318,7 +253,7 @@ function Show-Menu {
                 if (-not $SingleSelect) {
                     if ($MenuItems[$i].Installed) {
                         if ($MenuItems[$i].Selected) { $checkbox = "[X]"; $suffix = " (Force Reinstall)" }
-                        else { $checkbox = "[√]" }
+                        else { $checkbox = "[OK]" }
                     }
                     else {
                         $checkbox = if ($MenuItems[$i].Selected) { "[X]" } else { "[ ]" }
@@ -357,11 +292,6 @@ function Show-Menu {
 # ═══════════════════════════════════════════════════════════════════════════════
 #region Core Operations
 
-<#
-.SYNOPSIS
-    Ensures winget (Microsoft App Installer) is available.
-    Downloads and installs it if missing.
-#>
 function Assert-Winget {
     if ($DryRun) {
         Write-Log "[DRYRUN] Winget check skipped." -Level INFO
@@ -372,65 +302,36 @@ function Assert-Winget {
         return
     }
 
-    Write-Log "Winget not found — downloading Microsoft App Installer..." -Level WARN
+    Write-Log "Winget not found - downloading Microsoft App Installer..." -Level WARN
 
     Invoke-Failsafe -Name "Install Winget" -Action {
         $progressPreference = 'silentlyContinue'
-        # FIXED: Removed trailing space from URL
         $url = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         $output = "$env:TEMP\winget.msixbundle"
         Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
         Add-AppxPackage -Path $output
         Remove-Item $output -Force
 
-        # Refresh PATH so winget is discoverable immediately
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
         [System.Environment]::GetEnvironmentVariable("Path", "User")
     }
 }
 
-<#
-.SYNOPSIS
-    Installs a standard app via winget with full failsafe wrapping.
-    If the exact package ID is invalid or not found, automatically searches
-    winget by display name and offers the closest match as a fallback.
-
-.PARAMETER AppId
-    The winget package identifier (e.g. "7zip.7zip").
-
-.PARAMETER DisplayName
-    Friendly name used for logging AND as the search fallback query if the
-    exact ID is not found in the winget repository.
-
-.OUTPUTS
-    $true if installation succeeded (or was skipped by user in fallback),
-    $false if installation failed or user skipped fallback.
-
-.NOTES
-    Fallback flow:
-      1. Try exact ID install → success? Done.
-      2. If failed with "no package found" or similar → search winget by DisplayName.
-      3. If search returns results → show top 5 matches, let user pick one.
-      4. If user picks one → install that package instead.
-      5. If no results or user skips → log and move on.
-    This makes the script resilient to future package ID renames/removals.
-#>
 function Install-StandardApp {
     param(
         [Parameter(Mandatory)][string]$AppId,
         [string]$DisplayName = $AppId
     )
 
-    # ── DryRun shortcut ──
     if ($DryRun) {
         Write-Log "[DRYRUN] Would install: $DisplayName ($AppId)" -Level INFO
         Write-Host "  [DRYRUN] Simulating install of $DisplayName..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
-        Write-Log "[DRYRUN] $DisplayName — simulated OK." -Level OK
+        Write-Log "[DRYRUN] $DisplayName - simulated OK." -Level OK
         return $true
     }
 
-    # ── Step 1: Validate that the package ID exists in winget ──
+    # Validate that the package ID exists in winget
     $idValid = $true
     try {
         $searchCheck = winget show --id $AppId -e --accept-source-agreements 2>&1 | Out-String
@@ -442,7 +343,7 @@ function Install-StandardApp {
         $idValid = $false
     }
 
-    # ── Step 2: If ID is valid, install normally ──
+    # If ID is valid, install normally
     if ($idValid) {
         return Invoke-Failsafe -Name "Install $DisplayName ($AppId)" -Action {
             $result = winget install --id $AppId -e `
@@ -456,29 +357,21 @@ function Install-StandardApp {
         }
     }
 
-    # ── Step 3: ID is invalid — attempt fuzzy search by display name ──
+    # ID is invalid - attempt fuzzy search by display name
     Write-Log "Package ID '$AppId' not found in winget. Searching for '$DisplayName'..." -Level WARN
 
     $fallbackId = $null
     try {
-        # Search winget with the friendly display name
         $raw = winget search $DisplayName --accept-source-agreements 2>&1 | Out-String
-
-        # Parse search results — winget outputs a table with columns:
-        #   Name  Id  Version  Source
-        # We extract lines that look like package entries (contain a dot in the ID column)
         $lines = $raw -split "`n" | Where-Object { $_ -match '\S+\.\S+' -and $_ -notmatch '^-|^Name\s' }
 
-        # FIXED: Return $false instead of bare return
         if ($lines.Count -eq 0) {
             Write-Log "No alternatives found for '$DisplayName'. Skipping." -Level ERROR
             return $false
         }
 
-        # Parse up to 5 results
         $foundApps = @()
         foreach ($line in ($lines | Select-Object -First 5)) {
-            # Winget output is column-aligned; split on 2+ spaces
             $parts = ($line.Trim() -split '\s{2,}') | Where-Object { $_ -ne '' }
             if ($parts.Count -ge 2) {
                 $foundApps += [pscustomobject]@{
@@ -489,25 +382,24 @@ function Install-StandardApp {
             }
         }
 
-        # FIXED: Return $false instead of bare return
         if ($foundApps.Count -eq 0) {
             Write-Log "Could not parse search results for '$DisplayName'. Skipping." -Level ERROR
             return $false
         }
 
         # Show the user the alternatives
-        Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-        Write-Host "║  PACKAGE ID CHANGED — '$AppId' no longer exists" -ForegroundColor Yellow
-        Write-Host "║  Closest matches for '$DisplayName':" -ForegroundColor Yellow
-        Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+        Write-Host "`n+------------------------------------------------------------+" -ForegroundColor Yellow
+        Write-Host "|  PACKAGE ID CHANGED - '$AppId' no longer exists" -ForegroundColor Yellow
+        Write-Host "|  Closest matches for '$DisplayName':" -ForegroundColor Yellow
+        Write-Host "+------------------------------------------------------------+" -ForegroundColor Yellow
 
         for ($i = 0; $i -lt $foundApps.Count; $i++) {
-            $entry = "  [$($i+1)] $($foundApps[$i].Name)  →  $($foundApps[$i].Id)  (v$($foundApps[$i].Version))"
-            Write-Host ("║" + $entry.PadRight(58) + "║") -ForegroundColor White
+            $entry = "  [$($i+1)] $($foundApps[$i].Name)  ->  $($foundApps[$i].Id)  (v$($foundApps[$i].Version))"
+            Write-Host ("| " + $entry.PadRight(59) + "|") -ForegroundColor White
         }
 
-        Write-Host ("║  [S] Skip this app".PadRight(59) + "║") -ForegroundColor DarkGray
-        Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+        Write-Host ("|  [S] Skip this app".PadRight(60) + "|") -ForegroundColor DarkGray
+        Write-Host "+------------------------------------------------------------+" -ForegroundColor Yellow
 
         Write-Host "Pick a number (1-$($foundApps.Count)) or [S] to skip: " -NoNewline -ForegroundColor Cyan
 
@@ -516,7 +408,6 @@ function Install-StandardApp {
             if ($pick -eq 'S') {
                 Write-Host "S" -ForegroundColor Red
                 Write-Log "User skipped fallback for '$DisplayName'." -Level WARN
-                # FIXED: Return $false when user skips
                 return $false
             }
             $num = 0
@@ -533,7 +424,7 @@ function Install-StandardApp {
         return $false
     }
 
-    # ── Step 4: Install the fallback package ──
+    # Install the fallback package
     if ($fallbackId) {
         return Invoke-Failsafe -Name "Install $DisplayName (fallback: $fallbackId)" -Action {
             $result = winget install --id $fallbackId -e `
@@ -550,37 +441,14 @@ function Install-StandardApp {
     return $false
 }
 
-<#
-.SYNOPSIS
-    Installs TightVNC server-only with full silent configuration.
-    Asks the user whether to set a password or run completely open (no auth).
-
-.NOTES
-    MSI Override Flags — what each one does:
-    ─────────────────────────────────────────────────────────────────
-    ADDLOCAL=Server                        → Server only (no viewer, no start menu clutter)
-    SET_USEVNCAUTHENTICATION=1             → We ARE controlling the VNC auth toggle
-    VALUE_OF_USEVNCAUTHENTICATION=<0|1>    → 0 = no auth, 1 = password required
-    SET_PASSWORD=1 / VALUE_OF_PASSWORD     → Primary (control) password
-    SET_VIEWONLYPASSWORD=1 / VALUE_OF_…    → View-only password
-    SET_USECONTROLAUTHENTICATION=1         → We ARE controlling admin auth
-    VALUE_OF_USECONTROLAUTHENTICATION=0    → Disable admin/control-interface auth
-    SET_ACCEPTHTTPCONNECTIONS=1  VALUE=0   → Disable built-in HTTP Java viewer
-    SET_REMOVEWALLPAPER=1  VALUE=0         → Keep desktop wallpaper visible
-    SET_ENABLEFILETRANSFERS=1  VALUE=1     → Enable file transfer over VNC
-    SET_CONNECTTOREMOTESESSION=1  VALUE=1  → Attach to console/RDP session
-    SET_RUNCONTROLINTERFACE=1  VALUE=0     → No system-tray icon
-    SET_BLOCKLOCALINPUT=1  VALUE=1         → Block local keyboard/mouse during remote session
-    /quiet /norestart                      → Silent install, no reboot
-#>
 function Install-TightVNC {
-    Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-    Write-Host "║              TightVNC Configuration                      ║" -ForegroundColor Magenta
-    Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Magenta
-    Write-Host "║  [1] No Password  (open access — home network)           ║" -ForegroundColor White
-    Write-Host "║  [2] Set Password (max 8 chars — TightVNC limit)         ║" -ForegroundColor White
-    Write-Host "║  [S] Skip TightVNC                                       ║" -ForegroundColor DarkGray
-    Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+    Write-Host "`n+------------------------------------------------------------+" -ForegroundColor Magenta
+    Write-Host "|              TightVNC Configuration                        |" -ForegroundColor Magenta
+    Write-Host "+------------------------------------------------------------+" -ForegroundColor Magenta
+    Write-Host "|  [1] No Password  (open access - home network)           |" -ForegroundColor White
+    Write-Host "|  [2] Set Password (max 8 chars - TightVNC limit)         |" -ForegroundColor White
+    Write-Host "|  [S] Skip TightVNC                                       |" -ForegroundColor DarkGray
+    Write-Host "+------------------------------------------------------------+" -ForegroundColor Magenta
 
     Write-Host "Choose (1/2/S): " -NoNewline -ForegroundColor Cyan
 
@@ -589,23 +457,22 @@ function Install-TightVNC {
     while ($true) {
         $pick = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
         if ($pick -eq '1') {
-            Write-Host "1 — No Password" -ForegroundColor Green
+            Write-Host "1 - No Password" -ForegroundColor Green
             $vncMode = "NoAuth"
             break
         }
         elseif ($pick -eq '2') {
-            Write-Host "2 — Set Password" -ForegroundColor Green
+            Write-Host "2 - Set Password" -ForegroundColor Green
             $vncMode = "Password"
             break
         }
         elseif ($pick -eq 'S') {
-            Write-Host "S — Skipped" -ForegroundColor Red
+            Write-Host "S - Skipped" -ForegroundColor Red
             Write-Log "User skipped TightVNC installation." -Level WARN
             return $false
         }
     }
 
-    # If password mode, ask for it
     if ($vncMode -eq "Password") {
         Write-Host "Note: TightVNC limits passwords to 8 characters." -ForegroundColor Yellow
         $securePass = Read-Host -AsSecureString "Enter VNC password"
@@ -613,63 +480,45 @@ function Install-TightVNC {
             [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePass)
         )
         if ([string]::IsNullOrWhiteSpace($vncPassword)) {
-            Write-Log "Empty password entered — falling back to No Auth mode." -Level WARN
+            Write-Log "Empty password entered - falling back to No Auth mode." -Level WARN
             $vncMode = "NoAuth"
         }
     }
 
-    # ── DryRun shortcut ──
     if ($DryRun) {
         Write-Log "[DRYRUN] Would install TightVNC: mode=$vncMode, server-only, no tray, file-transfer ON, RDP session, local input blocked." -Level INFO
         Write-Host "  [DRYRUN] Simulating TightVNC install..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
-        Write-Log "[DRYRUN] TightVNC — simulated OK." -Level OK
+        Write-Log "[DRYRUN] TightVNC - simulated OK." -Level OK
         return $true
     }
 
     return Invoke-Failsafe -Name "Install TightVNC ($vncMode)" -Action {
-        # Base flags — always applied
         $overrideParts = @(
             "/quiet"
             "/norestart"
             "ADDLOCAL=Server"
-
-            # Control-interface auth (admin panel) → OFF
             "SET_USECONTROLAUTHENTICATION=1"
             "VALUE_OF_USECONTROLAUTHENTICATION=0"
-
-            # HTTP Java viewer → OFF
             "SET_ACCEPTHTTPCONNECTIONS=1"
             "VALUE_OF_ACCEPTHTTPCONNECTIONS=0"
-
-            # Keep desktop wallpaper visible
             "SET_REMOVEWALLPAPER=1"
             "VALUE_OF_REMOVEWALLPAPER=0"
-
-            # Enable file transfer
             "SET_ENABLEFILETRANSFERS=1"
             "VALUE_OF_ENABLEFILETRANSFERS=1"
-
-            # Connect to console/RDP session
             "SET_CONNECTTOREMOTESESSION=1"
             "VALUE_OF_CONNECTTOREMOTESESSION=1"
-
-            # No system-tray icon
             "SET_RUNCONTROLINTERFACE=1"
             "VALUE_OF_RUNCONTROLINTERFACE=0"
-
-            # Block local keyboard/mouse during remote session
             "SET_BLOCKLOCALINPUT=1"
             "VALUE_OF_BLOCKLOCALINPUT=1"
         )
 
         if ($vncMode -eq "NoAuth") {
-            # VNC authentication → OFF  (no password required)
             $overrideParts += "SET_USEVNCAUTHENTICATION=1"
             $overrideParts += "VALUE_OF_USEVNCAUTHENTICATION=0"
         }
         else {
-            # VNC authentication → ON with user-supplied password
             $overrideParts += "SET_USEVNCAUTHENTICATION=1"
             $overrideParts += "VALUE_OF_USEVNCAUTHENTICATION=1"
             $overrideParts += "SET_PASSWORD=1"
@@ -693,23 +542,12 @@ function Install-TightVNC {
     }
 }
 
-<#
-.SYNOPSIS
-    Installs ZeroTier One and auto-joins the configured network.
-
-.OUTPUTS
-    $true if successful, $false otherwise.
-
-.NOTES
-    After install, the script waits a few seconds for the service to start,
-    then attempts to join the network via zerotier-cli.
-#>
 function Install-ZeroTier-AutoJoin {
     if ($DryRun) {
         Write-Log "[DRYRUN] Would install ZeroTier One and join network $ZeroTierNetworkId" -Level INFO
         Write-Host "  [DRYRUN] Simulating ZeroTier install + network join..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
-        Write-Log "[DRYRUN] ZeroTier — simulated OK." -Level OK
+        Write-Log "[DRYRUN] ZeroTier - simulated OK." -Level OK
         return $true
     }
 
@@ -730,7 +568,6 @@ function Install-ZeroTier-AutoJoin {
         Write-Log "Waiting 8 seconds for ZeroTier service to initialize..." -Level INFO
         Start-Sleep -Seconds 8
 
-        # Try the ProgramData CLI path first, fall back to PATH
         $ztCliPath = "C:\ProgramData\ZeroTier\One\zerotier-cli.bat"
         if (Test-Path $ztCliPath) {
             $joinOutput = & $ztCliPath join $ZeroTierNetworkId 2>&1
@@ -753,12 +590,6 @@ function Install-ZeroTier-AutoJoin {
 # ═══════════════════════════════════════════════════════════════════════════════
 #region Repair Tools
 
-<#
-.SYNOPSIS
-    Temporarily sets Cloudflare DNS (1.1.1.1 / 1.0.0.1) on the primary
-    active network adapter. Returns the adapter object so the caller can
-    revert later.
-#>
 function Set-TemporaryCloudflareDNS {
     if ($DryRun) {
         Write-Log "[DRYRUN] Would set temporary Cloudflare DNS (1.1.1.1 / 1.0.0.1)" -Level INFO
@@ -776,16 +607,10 @@ function Set-TemporaryCloudflareDNS {
         Clear-DnsClientCache
         Write-Log "Cloudflare DNS applied to '$($adapter.InterfaceAlias)'. Will revert on menu exit." -Level OK
 
-        # Store in script scope so the menu loop can revert it
         $script:TempDnsAdapter = $adapter
     }
 }
 
-<#
-.SYNOPSIS
-    Reverts DNS settings back to DHCP (automatic) on the adapter that was
-    previously modified by Set-TemporaryCloudflareDNS.
-#>
 function Restore-DNS {
     if ($DryRun) {
         Write-Log "[DRYRUN] Would restore DNS to DHCP" -Level INFO
@@ -802,9 +627,6 @@ function Restore-DNS {
     }
 }
 
-<#
-.SYNOPSIS  Runs System File Checker (sfc /scannow).
-#>
 function Invoke-SFC {
     if ($DryRun) {
         Write-Log "[DRYRUN] Would run SFC /scannow" -Level INFO
@@ -814,14 +636,11 @@ function Invoke-SFC {
     Invoke-Failsafe -Name "SFC /scannow" -Action {
         sfc /scannow
         if ($LASTEXITCODE -ne 0) {
-            Write-Log "SFC reported issues — check CBS.log for details." -Level WARN
+            Write-Log "SFC reported issues - check CBS.log for details." -Level WARN
         }
     }
 }
 
-<#
-.SYNOPSIS  Runs DISM RestoreHealth with proxy settings cleared.
-#>
 function Invoke-DISM {
     if ($DryRun) {
         Write-Log "[DRYRUN] Would run DISM /RestoreHealth (Standard)" -Level INFO
@@ -835,16 +654,11 @@ function Invoke-DISM {
     }
 }
 
-<#
-.SYNOPSIS
-    Runs DISM RestoreHealth through a user-supplied HTTP proxy to bypass
-    ISP or corporate caches. Proxy settings are reset after completion.
-#>
 function Invoke-DISM-WithProxy {
     $proxyStr = Read-Host "Enter Proxy Address (e.g., http://192.168.1.50:8080 )"
 
     if ([string]::IsNullOrWhiteSpace($proxyStr)) {
-        Write-Log "No proxy entered — skipping DISM with proxy." -Level WARN
+        Write-Log "No proxy entered - skipping DISM with proxy." -Level WARN
         return $false
     }
 
@@ -861,7 +675,6 @@ function Invoke-DISM-WithProxy {
 
         DISM /Online /Cleanup-Image /RestoreHealth
 
-        # Always clean up proxy settings, even if DISM failed
         $env:HTTP_PROXY = ""
         $env:HTTPS_PROXY = ""
         netsh winhttp reset proxy | Out-Null
@@ -869,14 +682,6 @@ function Invoke-DISM-WithProxy {
     }
 }
 
-<#
-.SYNOPSIS
-    Runs the Massgrave Microsoft Activation Scripts (MAS) directly from
-    the official GitHub source.
-
-.NOTES
-    Source: https://massgrave.dev  — widely trusted community activation tool.
-#>
 function Invoke-Massgrave {
     if ($DryRun) {
         Write-Log "[DRYRUN] Would fetch and run Massgrave activation script from https://get.activated.win" -Level INFO
@@ -890,15 +695,6 @@ function Invoke-Massgrave {
     }
 }
 
-<#
-.SYNOPSIS
-    Launches Chris Titus Tech's Windows Utility (WinUtil) — a comprehensive
-    Windows tweaking, debloating, and configuration tool.
-
-.NOTES
-    Source: https://christitus.com/win  — popular community Windows utility.
-    Runs directly from the web via Invoke-RestMethod.
-#>
 function Invoke-WinUtil {
     if ($DryRun) {
         Write-Log "[DRYRUN] Would fetch and run Chris Titus WinUtil from https://christitus.com/win" -Level INFO
@@ -912,11 +708,6 @@ function Invoke-WinUtil {
     }
 }
 
-<#
-.SYNOPSIS
-    Downloads KVRT (Kaspersky Virus Removal Tool) to the Desktop and
-    optionally launches it.
-#>
 function Invoke-KVRT {
     $desktopPath = [Environment]::GetFolderPath("Desktop")
     $kvrtPath = Join-Path $desktopPath "KVRT.exe"
@@ -942,7 +733,6 @@ function Invoke-KVRT {
         return $true
     }
 
-    # FIXED: Removed trailing space from URL
     $downloaded = Invoke-Failsafe -Name "Download KVRT" -Action {
         Invoke-WebRequest -Uri "https://devbuilds.s.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe" `
             -OutFile $kvrtPath -UseBasicParsing
@@ -975,12 +765,11 @@ function Invoke-KVRT {
 #region Main
 
 Write-Log ("=" * 60) -Level INFO
-Write-Log "OMNITX Setup v3.0.1 — Session started." -Level INFO
-if ($DryRun) { Write-Log "DRY RUN MODE ENABLED — No changes will be made" -Level WARN }
+Write-Log "OMNITX Setup v3.0.2 - Session started." -Level INFO
+if ($DryRun) { Write-Log "DRY RUN MODE ENABLED - No changes will be made" -Level WARN }
 Write-Log ("=" * 60) -Level INFO
 
 while ($true) {
-    # ── Main Menu ──
     $mainMenuItems = @(
         [pscustomobject]@{ Display = "1. Install OMNITX Setup (Apps & Tools)"; Id = "Apps"; Selected = $false }
         [pscustomobject]@{ Display = "2. Fix & Repair Windows"; Id = "Fix"; Selected = $false }
@@ -999,26 +788,21 @@ while ($true) {
         break
     }
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # PAGE 1 — APP INSTALLER  (One-by-One Flow)
-    # ══════════════════════════════════════════════════════════════════════════
+    # PAGE 1 - APP INSTALLER (One-by-One Flow)
     if ($selectedMain -eq "Apps") {
 
-        # Step 1: Ensure winget is available
         Assert-Winget
 
-        # ── Counters for final report ──
         $successCount = 0
         $failCount = 0
         $skippedCount = 0
         $aborted = $false
 
-        Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-        Write-Host "║          APP INSTALLER — One by One                      ║" -ForegroundColor Cyan
-        Write-Host "║  [Y] Install   [N] Skip   [ESC] Abort remaining          ║" -ForegroundColor Cyan
-        Write-Host "╚══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+        Write-Host "`n+------------------------------------------------------------+" -ForegroundColor Cyan
+        Write-Host "|          APP INSTALLER - One by One                        |" -ForegroundColor Cyan
+        Write-Host "|  [Y] Install   [N] Skip   [ESC] Abort remaining            |" -ForegroundColor Cyan
+        Write-Host "+------------------------------------------------------------+`n" -ForegroundColor Cyan
 
-        # Step 2: Walk through each app in the catalog
         for ($idx = 0; $idx -lt $AppCatalog.Count; $idx++) {
             $app = $AppCatalog[$idx]
 
@@ -1027,12 +811,12 @@ while ($true) {
             $num = $idx + 1
             $total = $AppCatalog.Count
             $tag = switch ($app.Type) {
-                "VNC" { "  [VNC — will configure]" }
+                "VNC" { "  [VNC - will configure]" }
                 "ZeroTier" { "  [Auto-join network]" }
                 default { "" }
             }
 
-            Write-Host ("─" * 60) -ForegroundColor DarkGray
+            Write-Host ("-" * 60) -ForegroundColor DarkGray
             Write-Host "  [$num/$total]  $($app.Display)$tag" -ForegroundColor White
             Write-Host "          Package: $($app.Id)" -ForegroundColor DarkGray
             Write-Host "  Install? [Y/N/ESC]: " -NoNewline -ForegroundColor Yellow
@@ -1041,7 +825,7 @@ while ($true) {
             while ($true) {
                 $k = [System.Console]::ReadKey($true)
                 if ($k.Key -eq 'Escape') {
-                    Write-Host "ESC — Aborting remaining apps." -ForegroundColor Red
+                    Write-Host "ESC - Aborting remaining apps." -ForegroundColor Red
                     Write-Log "User pressed ESC at app $num/$total ($($app.Display)). Aborting remaining." -Level WARN
                     $aborted = $true
                     $decision = "SKIP"
@@ -1054,7 +838,7 @@ while ($true) {
                     break
                 }
                 elseif ($ch -eq 'N') {
-                    Write-Host "N — Skipped" -ForegroundColor DarkGray
+                    Write-Host "N - Skipped" -ForegroundColor DarkGray
                     $decision = "SKIP"
                     break
                 }
@@ -1066,7 +850,6 @@ while ($true) {
                 continue
             }
 
-            # ── Install based on Type ──
             switch ($app.Type) {
                 "Standard" {
                     $ok = Install-StandardApp -AppId $app.Id -DisplayName $app.Display
@@ -1078,7 +861,6 @@ while ($true) {
                     else { $successCount++ }
                 }
                 "ZeroTier" {
-                    # FIXED: Check return value properly
                     $ok = Install-ZeroTier-AutoJoin
                     if ($ok) { $successCount++ } else { $failCount++ }
                 }
@@ -1087,9 +869,8 @@ while ($true) {
             Write-Host ""
         }
 
-        # Step 3: Offer custom app installation
         if (-not $aborted) {
-            Write-Host ("─" * 60) -ForegroundColor DarkGray
+            Write-Host ("-" * 60) -ForegroundColor DarkGray
             Write-Host "`n  Install custom winget packages? [Y/N]: " -NoNewline -ForegroundColor Magenta
             $doCustom = $false
             while ($true) {
@@ -1117,18 +898,17 @@ while ($true) {
             }
         }
 
-        # ── Final Report ──
-        Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-        Write-Host "║                  INSTALLATION REPORT                     ║" -ForegroundColor Cyan
-        Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-        Write-Host ("║  Succeeded : $successCount".PadRight(58) + "║") -ForegroundColor Green
-        Write-Host ("║  Skipped   : $skippedCount".PadRight(58) + "║") -ForegroundColor DarkGray
-        Write-Host ("║  Failed    : $failCount".PadRight(58) + "║") -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
-        Write-Host ("║  Log File  : $LogFile".PadRight(58) + "║") -ForegroundColor Yellow
+        Write-Host "`n+------------------------------------------------------------+" -ForegroundColor Cyan
+        Write-Host "|                  INSTALLATION REPORT                       |" -ForegroundColor Cyan
+        Write-Host "+------------------------------------------------------------+" -ForegroundColor Cyan
+        Write-Host ("|  Succeeded : $successCount".PadRight(60) + "|") -ForegroundColor Green
+        Write-Host ("|  Skipped   : $skippedCount".PadRight(60) + "|") -ForegroundColor DarkGray
+        Write-Host ("|  Failed    : $failCount".PadRight(60) + "|") -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
+        Write-Host ("|  Log File  : $LogFile".PadRight(60) + "|") -ForegroundColor Yellow
         if ($DryRun) {
-            Write-Host ("║  Mode      : DRY RUN (no changes made)".PadRight(58) + "║") -ForegroundColor Yellow
+            Write-Host ("|  Mode      : DRY RUN (no changes made)".PadRight(60) + "|") -ForegroundColor Yellow
         }
-        Write-Host "╚══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+        Write-Host "+------------------------------------------------------------+`n" -ForegroundColor Cyan
 
         Write-Log "Installation complete. $successCount OK, $skippedCount skipped, $failCount failed." -Level $(if ($failCount -gt 0) { "WARN" } else { "OK" })
 
@@ -1136,9 +916,7 @@ while ($true) {
         $null = [System.Console]::ReadKey($true)
     }
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # PAGE 2 — FIX & REPAIR WINDOWS
-    # ══════════════════════════════════════════════════════════════════════════
+    # PAGE 2 - FIX & REPAIR WINDOWS
     elseif ($selectedMain -eq "Fix") {
         $script:TempDnsAdapter = $null
 
@@ -1156,7 +934,7 @@ while ($true) {
             $fixChoice = Show-Menu -Title "Windows Repair & Security (Enter to run action)" -MenuItems $fixItems -SingleSelect
 
             if ($fixChoice -eq "ESC" -or $fixChoice -eq "BACK") {
-                Restore-DNS   # revert temporary DNS if it was set
+                Restore-DNS
                 break
             }
 
