@@ -75,7 +75,7 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 #region Configuration
 
 # --- Script Version ---
-$ScriptVersion = "3.2.1"
+$ScriptVersion = "3.2.2"
 
 # --- DryRun Mode ---
 # Set to $true to test the full UI without installing anything.
@@ -650,126 +650,80 @@ function Install-TightVNC {
         return $true
     }
 
-    # Chocolatey installation - download MSI directly for full control
-    if ($PackageManager -eq "Chocolatey") {
-        return Invoke-Failsafe -Name "Install TightVNC ($vncMode) via Chocolatey/MSI" -Action {
-            $tempDir = "$env:TEMP\TightVNCInstall"
-            New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+    # Always use direct MSI download for TightVNC to ensure proper configuration
+    # This avoids winget override issues and Chocolatey package limitations
+    return Invoke-Failsafe -Name "Install TightVNC ($vncMode) via Direct MSI" -Action {
+        $tempDir = "$env:TEMP\TightVNCInstall"
+        New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+        
+        try {
+            $arch = if ([Environment]::Is64BitOperatingSystem) { "64bit" } else { "32bit" }
+            $msiUrl = "https://github.com/Tight-VNC/tightvnc/releases/download/v2.8.85/tightvnc-2.8.85-gpl-setup- $arch.msi"
+            $msiPath = "$tempDir\tightvnc.msi"
             
-            try {
-                $arch = if ([Environment]::Is64BitOperatingSystem) { "64bit" } else { "32bit" }
-                $msiUrl = "https://github.com/Tight-VNC/tightvnc/releases/download/v2.8.85/tightvnc-2.8.85-gpl-setup- $arch.msi"
-                $msiPath = "$tempDir\tightvnc.msi"
-                
-                Write-Log "Downloading TightVNC MSI ($arch)..." -Level INFO
-                Invoke-WebRequest -Uri $msiUrl -OutFile $msiPath -UseBasicParsing
-                
-                # Build MSI arguments for server-only install
-                $msiArgs = @(
-                    "/i `"$msiPath`""
-                    "/quiet"
-                    "/norestart"
-                    "ADDLOCAL=Server"
-                    "SERVER_REGISTER_AS_SERVICE=1"
-                    "SERVER_ADD_FIREWALL_EXCEPTION=1"
-                    "SET_USEVNCAUTHENTICATION=1"
-                )
+            Write-Log "Downloading TightVNC MSI ($arch) from GitHub..." -Level INFO
+            Invoke-WebRequest -Uri $msiUrl -OutFile $msiPath -UseBasicParsing
+            
+            # Build MSI arguments for server-only install
+            # Use array to avoid quoting issues
+            $msiArgs = @(
+                "/i"
+                "`"$msiPath`""
+                "/quiet"
+                "/norestart"
+                "ADDLOCAL=Server"
+                "SERVER_REGISTER_AS_SERVICE=1"
+                "SERVER_ADD_FIREWALL_EXCEPTION=1"
+                "SET_USEVNCAUTHENTICATION=1"
+            )
 
-                if ($vncMode -eq "NoAuth") {
-                    $msiArgs += "VALUE_OF_USEVNCAUTHENTICATION=0"
-                } else {
-                    $msiArgs += "VALUE_OF_USEVNCAUTHENTICATION=1"
-                    $msiArgs += "SET_PASSWORD=1"
-                    $msiArgs += "VALUE_OF_PASSWORD=$vncPassword"
-                    $msiArgs += "SET_VIEWONLYPASSWORD=1" 
-                    $msiArgs += "VALUE_OF_VIEWONLYPASSWORD=$vncPassword"
-                }
-
-                # Add additional settings
-                $msiArgs += @(
-                    "SET_USECONTROLAUTHENTICATION=1"
-                    "VALUE_OF_USECONTROLAUTHENTICATION=0"
-                    "SET_ACCEPTHTTPCONNECTIONS=1"
-                    "VALUE_OF_ACCEPTHTTPCONNECTIONS=0"
-                    "SET_REMOVEWALLPAPER=1"
-                    "VALUE_OF_REMOVEWALLPAPER=0"
-                    "SET_ENABLEFILETRANSFERS=1"
-                    "VALUE_OF_ENABLEFILETRANSFERS=1"
-                    "SET_CONNECTTOREMOTESESSION=1"
-                    "VALUE_OF_CONNECTTOREMOTESESSION=1"
-                    "SET_RUNCONTROLINTERFACE=1"
-                    "VALUE_OF_RUNCONTROLINTERFACE=0"
-                    "SET_BLOCKLOCALINPUT=1"
-                    "VALUE_OF_BLOCKLOCALINPUT=1"
-                )
-
-                $msiArgString = $msiArgs -join " "
-                Write-Log "Installing with MSI arguments" -Level INFO
-                
-                $process = Start-Process -FilePath "msiexec.exe" -ArgumentList $msiArgString -Wait -PassThru
-                
-                if ($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010) {
-                    throw "MSI installation failed with exit code $($process.ExitCode)"
-                }
-                
-                Write-Log "TightVNC installed successfully via direct MSI" -Level OK
-                
-                # Start the service if not already running
-                Start-Service -Name "tvnserver" -ErrorAction SilentlyContinue
+            if ($vncMode -eq "NoAuth") {
+                $msiArgs += "VALUE_OF_USEVNCAUTHENTICATION=0"
             }
-            finally {
-                Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+            else {
+                $msiArgs += "VALUE_OF_USEVNCAUTHENTICATION=1"
+                $msiArgs += "SET_PASSWORD=1"
+                $msiArgs += "VALUE_OF_PASSWORD=$vncPassword"
+                $msiArgs += "SET_VIEWONLYPASSWORD=1" 
+                $msiArgs += "VALUE_OF_VIEWONLYPASSWORD=$vncPassword"
             }
+
+            # Add additional settings
+            $msiArgs += @(
+                "SET_USECONTROLAUTHENTICATION=1"
+                "VALUE_OF_USECONTROLAUTHENTICATION=0"
+                "SET_ACCEPTHTTPCONNECTIONS=1"
+                "VALUE_OF_ACCEPTHTTPCONNECTIONS=0"
+                "SET_REMOVEWALLPAPER=1"
+                "VALUE_OF_REMOVEWALLPAPER=0"
+                "SET_ENABLEFILETRANSFERS=1"
+                "VALUE_OF_ENABLEFILETRANSFERS=1"
+                "SET_CONNECTTOREMOTESESSION=1"
+                "VALUE_OF_CONNECTTOREMOTESESSION=1"
+                "SET_RUNCONTROLINTERFACE=1"
+                "VALUE_OF_RUNCONTROLINTERFACE=0"
+                "SET_BLOCKLOCALINPUT=1"
+                "VALUE_OF_BLOCKLOCALINPUT=1"
+            )
+
+            Write-Log "Installing TightVNC with MSI..." -Level INFO
+            Write-Log "MSI arguments: $($msiArgs -join ' ')" -Level INFO
+            
+            $process = Start-Process -FilePath "msiexec.exe" -ArgumentList $msiArgs -Wait -PassThru
+            
+            if ($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010) {
+                throw "MSI installation failed with exit code $($process.ExitCode)"
+            }
+            
+            Write-Log "TightVNC installed successfully via direct MSI" -Level OK
+            
+            # Start the service if not already running
+            Start-Service -Name "tvnserver" -ErrorAction SilentlyContinue
+            Write-Log "TightVNC service started" -Level OK
         }
-    }
-
-    # Winget installation with MSI overrides
-    return Invoke-Failsafe -Name "Install TightVNC ($vncMode) via Winget" -Action {
-        $overrideParts = @(
-            "/quiet"
-            "/norestart"
-            "ADDLOCAL=Server"
-            "SET_USECONTROLAUTHENTICATION=1"
-            "VALUE_OF_USECONTROLAUTHENTICATION=0"
-            "SET_ACCEPTHTTPCONNECTIONS=1"
-            "VALUE_OF_ACCEPTHTTPCONNECTIONS=0"
-            "SET_REMOVEWALLPAPER=1"
-            "VALUE_OF_REMOVEWALLPAPER=0"
-            "SET_ENABLEFILETRANSFERS=1"
-            "VALUE_OF_ENABLEFILETRANSFERS=1"
-            "SET_CONNECTTOREMOTESESSION=1"
-            "VALUE_OF_CONNECTTOREMOTESESSION=1"
-            "SET_RUNCONTROLINTERFACE=1"
-            "VALUE_OF_RUNCONTROLINTERFACE=0"
-            "SET_BLOCKLOCALINPUT=1"
-            "VALUE_OF_BLOCKLOCALINPUT=1"
-        )
-
-        if ($vncMode -eq "NoAuth") {
-            $overrideParts += "SET_USEVNCAUTHENTICATION=1"
-            $overrideParts += "VALUE_OF_USEVNCAUTHENTICATION=0"
+        finally {
+            Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
         }
-        else {
-            $overrideParts += "SET_USEVNCAUTHENTICATION=1"
-            $overrideParts += "VALUE_OF_USEVNCAUTHENTICATION=1"
-            $overrideParts += "SET_PASSWORD=1"
-            $overrideParts += "VALUE_OF_PASSWORD=$vncPassword"
-            $overrideParts += "SET_VIEWONLYPASSWORD=1"
-            $overrideParts += "VALUE_OF_VIEWONLYPASSWORD=$vncPassword"
-        }
-
-        $vncOverride = $overrideParts -join " "
-
-        winget install --id TightVNC.TightVNC -e `
-            --accept-package-agreements `
-            --accept-source-agreements `
-            --override $vncOverride
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "TightVNC winget install exited with code $LASTEXITCODE"
-        }
-
-        Write-Log "TightVNC installed: mode=$vncMode, server-only, no tray, file-transfer ON, RDP session, local input blocked." -Level OK
     }
 }
 
@@ -788,7 +742,8 @@ function Install-ZeroTier-AutoJoin {
             if ($LASTEXITCODE -ne 0 -and $result -notmatch "already installed") {
                 throw "Chocolatey ZeroTier install exited with code $LASTEXITCODE"
             }
-        } else {
+        }
+        else {
             winget install --id ZeroTier.ZeroTierOne -e `
                 --accept-package-agreements `
                 --accept-source-agreements `
@@ -832,7 +787,8 @@ function Install-ZeroTier-AutoJoin {
                     if ($cliPath -match "zerotier-one_x(64|86)\.exe") {
                         # Use the service executable with -q switch for query/join commands
                         $joinOutput = & $cliPath -q join $ZeroTierNetworkId 2>&1
-                    } else {
+                    }
+                    else {
                         # Use standard CLI
                         $joinOutput = & $cliPath join $ZeroTierNetworkId 2>&1
                     }
@@ -891,6 +847,66 @@ function Install-ZeroTier-AutoJoin {
 # ===============================================================================
 #region Repair Tools
 
+function Install-Chocolatey-FromFixMenu {
+    # This function is specifically for the Fix menu to install Chocolatey
+    # even when it's not the current package manager
+    if ($DryRun) {
+        Write-Log "[DRYRUN] Would install Chocolatey from Fix menu" -Level INFO
+        return $true
+    }
+
+    if (Get-Command choco -ErrorAction SilentlyContinue) {
+        Write-Log "Chocolatey is already installed." -Level OK
+        $version = choco --version 2>$null
+        Write-Host "`nChocolatey v$version is already installed." -ForegroundColor Green
+        Write-Host "Use 'Switch Package Manager' to activate it if needed." -ForegroundColor Yellow
+        return $true
+    }
+
+    Write-Host "`n+----------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|         INSTALL CHOCOLATEY                              |" -ForegroundColor Cyan
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|  This will install Chocolatey package manager.          |" -ForegroundColor White
+    Write-Host "|  Chocolatey requires Windows 7+ and PowerShell 3+.    |" -ForegroundColor White
+    Write-Host "|                                                          |" -ForegroundColor White
+    Write-Host "|  After installation, you can switch to Chocolatey         |" -ForegroundColor White
+    Write-Host "|  using 'Switch Package Manager' in this menu.             |" -ForegroundColor White
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
+
+    Write-Host "`nProceed with Chocolatey installation? (Y/N): " -NoNewline -ForegroundColor Yellow
+    $confirm = $null
+    while ($true) {
+        $k = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
+        if ($k -eq 'Y') { Write-Host "Y" -ForegroundColor Green; $confirm = $true; break }
+        if ($k -eq 'N') { Write-Host "N" -ForegroundColor Red; $confirm = $false; break }
+    }
+
+    if (-not $confirm) {
+        Write-Log "Chocolatey installation cancelled by user." -Level WARN
+        return $false
+    }
+
+    return Invoke-Failsafe -Name "Install Chocolatey (from Fix Menu)" -Action {
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1 '))
+        
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
+        [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+        $chocoCmd = Get-Command choco -ErrorAction SilentlyContinue
+        if ($chocoCmd) {
+            $version = choco --version 2>$null
+            Write-Log "Chocolatey installed successfully: v$version at $($chocoCmd.Source)" -Level OK
+            Write-Host "`nChocolatey v$version installed successfully!" -ForegroundColor Green
+            Write-Host "You can now switch to Chocolatey using 'Switch Package Manager'" -ForegroundColor Cyan
+        }
+        else {
+            throw "Chocolatey installation verification failed - command not found in PATH"
+        }
+    }
+}
+
 function Repair-WingetFull {
     if ($DryRun) {
         Write-Log "[DRYRUN] Would repair winget with full dependencies" -Level INFO
@@ -904,7 +920,7 @@ function Repair-WingetFull {
     Write-Host "|           WINGET REPAIR & INSTALLATION                   |" -ForegroundColor Cyan
     Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
     Write-Host "|  This will download and install:                         |" -ForegroundColor White
-    Write-Host "|    * Windows App Runtime 1.8                           |" -ForegroundColor White
+    Write-Host "|    * Windows App Runtime 1.8                             |" -ForegroundColor White
     Write-Host "|    * VCLibs UWP Desktop Runtime                          |" -ForegroundColor White
     Write-Host "|    * Microsoft.DesktopAppInstaller (winget)              |" -ForegroundColor White
     Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
@@ -1121,7 +1137,8 @@ function Switch-PackageManager {
                 Write-Log "Package manager switched to: Winget" -Level OK
                 Write-Host "`n  Note: Winget will be used for all future installations." -ForegroundColor Cyan
                 Write-Host "  Run 'Repair/Install Winget + Dependencies' if needed." -ForegroundColor Yellow
-            } else {
+            }
+            else {
                 Write-Log "Package manager already set to Winget" -Level INFO
             }
             return $true
@@ -1129,11 +1146,18 @@ function Switch-PackageManager {
         elseif ($pick -eq '2') {
             Write-Host "2 - Chocolatey" -ForegroundColor Green
             if ($PackageManager -ne "Chocolatey") {
+                # Check if Chocolatey is installed before switching
+                if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+                    Write-Host "`n  WARNING: Chocolatey is not installed on this system." -ForegroundColor Red
+                    Write-Host "  Please run 'Install Chocolatey' from the Fix menu first." -ForegroundColor Yellow
+                    Write-Log "Attempted to switch to Chocolatey but it's not installed" -Level WARN
+                    return $false
+                }
                 $script:PackageManager = "Chocolatey"
                 Write-Log "Package manager switched to: Chocolatey" -Level OK
                 Write-Host "`n  Note: Chocolatey will be used for all future installations." -ForegroundColor Cyan
-                Write-Host "  Run 'Repair/Install Chocolatey' if needed." -ForegroundColor Yellow
-            } else {
+            }
+            else {
                 Write-Log "Package manager already set to Chocolatey" -Level INFO
             }
             return $true
@@ -1483,7 +1507,8 @@ while ($true) {
             $fixItems = @(
                 [pscustomobject]@{ Display = "Switch Package Manager (Winget <-> Chocolatey)"; Id = "SWITCH_PM"; Selected = $false }
                 [pscustomobject]@{ Display = "Repair/Install Winget + Dependencies"; Id = "WINGET_REPAIR"; Selected = $false }
-                [pscustomobject]@{ Display = "Repair/Install Chocolatey"; Id = "CHOCO_REPAIR"; Selected = $false }
+                [pscustomobject]@{ Display = "Install Chocolatey (if not present)"; Id = "CHOCO_INSTALL"; Selected = $false }
+                [pscustomobject]@{ Display = "Repair/Install Chocolatey (force reinstall)"; Id = "CHOCO_REPAIR"; Selected = $false }
                 [pscustomobject]@{ Display = "Temporarily apply Cloudflare DNS (1.1.1.1)"; Id = "CF_DNS"; Selected = $false }
                 [pscustomobject]@{ Display = "SFC /Scannow (System File Checker)"; Id = "SFC"; Selected = $false }
                 [pscustomobject]@{ Display = "DISM /RestoreHealth (Standard, No Proxy)"; Id = "DISM"; Selected = $false }
@@ -1505,6 +1530,7 @@ while ($true) {
             switch ($selectedAction) {
                 "SWITCH_PM" { Switch-PackageManager }
                 "WINGET_REPAIR" { Repair-WingetFull }
+                "CHOCO_INSTALL" { Install-Chocolatey-FromFixMenu }
                 "CHOCO_REPAIR" { Repair-ChocolateyFull }
                 "CF_DNS" { Set-TemporaryCloudflareDNS }
                 "SFC" { Invoke-SFC }
