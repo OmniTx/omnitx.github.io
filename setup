@@ -1,29 +1,26 @@
-#requires -Version 5.1
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
 <#
 .SYNOPSIS
-    OMNITX Setup Script — Automated Windows provisioning tool.
+    OMNITX Setup Script - Automated Windows provisioning tool.
 
 .DESCRIPTION
     One-command setup script for provisioning Windows machines in a home/lab
     environment. Designed to be invoked directly from the web:
 
         Set-ExecutionPolicy Bypass -Scope Process -Force
-        Invoke-RestMethod -Uri https://omnitx.github.io/setup | Invoke-Expression
+        Invoke-RestMethod -Uri https://omnitx.github.io/setup  | Invoke-Expression
 
     Features
     --------
-    • One-by-one app installation with Y/N/ESC per app
-    • Dual package manager support: Winget OR Chocolatey
-    • TightVNC: server-only, no tray, no start menu, file transfer,
+    * One-by-one app installation with Y/N/ESC per app
+    * Dual package manager support: Winget OR Chocolatey
+    * TightVNC: server-only, no tray, no start menu, file transfer,
       RDP session, local input blocked, no-auth or password mode
-    • ZeroTier auto-join to a pre-configured network
-    • Windows repair toolkit (SFC, DISM, DNS, KVRT, Massgrave, WinUtil, Winget/Choco Repair)
-    • Custom package installation loop (supports both managers)
-    • Per-operation try/catch failsafe — one failure never kills the script
-    • Timestamped log file on the Desktop for every session
-    • DryRun mode for testing UI without installing anything
+    * ZeroTier auto-join to a pre-configured network
+    * Windows repair toolkit (SFC, DISM, DNS, KVRT, Massgrave, WinUtil, Winget/Choco Repair)
+    * Custom package installation loop (supports both managers)
+    * Per-operation try/catch failsafe - one failure never kills the script
+    * Timestamped log file on the Desktop for every session
+    * DryRun mode for testing UI without installing anything
 
 .NOTES
     Author  : OMNITX
@@ -31,17 +28,17 @@ $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
     License : MIT
 
     CONFIGURATION
-    ─────────────
+    -----------
     All user-editable values live in the "Configuration" region below.
     Change the ZeroTier network ID, app list, log path, package manager, etc. there.
 
     LOGGING
-    ───────
+    -------
     Every action is logged to  %USERPROFILE%\Desktop\OMNITX_Setup_Log.txt
     with ISO-8601 timestamps and severity levels (INFO / WARN / ERROR / OK).
 
     ERROR HANDLING
-    ──────────────
+    --------------
     Each discrete operation (app install, ZeroTier join, repair command, etc.)
     is wrapped in its own try/catch block. If something fails:
       1. The error is logged.
@@ -54,9 +51,9 @@ $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # REGION: Execution Policy & Admin Elevation
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 Set-ExecutionPolicy Bypass -Scope Process -Force
 
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -66,15 +63,15 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
     }
     else {
         # When run via Invoke-Expression from the web, re-fetch and re-run as admin
-        $webCmd = "Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-RestMethod -Uri https://omnitx.github.io/setup | Invoke-Expression"
+        $webCmd = "Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-RestMethod -Uri https://omnitx.github.io/setup  | Invoke-Expression"
         Start-Process PowerShell -ArgumentList "-NoProfile -Command `"$webCmd`"" -Verb RunAs
     }
     exit
 }
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # REGION: Configuration  (edit these values to customize the script)
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 #region Configuration
 
 # --- Script Version ---
@@ -98,13 +95,13 @@ $ZeroTierNetworkId = "17d709436c5d1c9e"                     # Network to auto-jo
 $LogFile = Join-Path ([Environment]::GetFolderPath("Desktop")) "OMNITX_Setup_Log.txt"
 
 # --- App Catalog ---
-# Each entry: Display name (shown to user), package IDs for both managers, and a Type
+# Each entry: Display name (shown to user), package ids for both managers, and a Type
 # tag that controls special post-install behavior.
 #
 #   Type values:
-#     Standard  – installed silently via package manager, no extra steps
-#     VNC       – TightVNC with full configuration prompt
-#     ZeroTier  – installed then auto-joined to $ZeroTierNetworkId
+#     Standard  - installed silently via package manager, no extra steps
+#     VNC       - TightVNC with full configuration prompt
+#     ZeroTier  - installed then auto-joined to $ZeroTierNetworkId
 #
 # Apps are presented ONE BY ONE. The user confirms each individually.
 #
@@ -123,9 +120,9 @@ $AppCatalog = @(
 
 #endregion Configuration
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # REGION: Logging Subsystem
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 #region Logging
 
 function Write-Log {
@@ -147,9 +144,9 @@ function Write-Log {
 
 #endregion Logging
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # REGION: Utility Helpers
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 #region Helpers
 
 function Invoke-Failsafe {
@@ -158,13 +155,13 @@ function Invoke-Failsafe {
         [Parameter(Mandatory)][scriptblock]$Action
     )
     try {
-        Write-Log "START  ▸ $Name" -Level INFO
+        Write-Log "START  > $Name" -Level INFO
         & $Action
-        Write-Log "DONE   ✓ $Name" -Level OK
+        Write-Log "DONE   OK $Name" -Level OK
         return $true
     }
     catch {
-        Write-Log "FAILED ✗ $Name — $($_.Exception.Message)" -Level ERROR
+        Write-Log "FAILED !! $Name - $($_.Exception.Message)" -Level ERROR
         return $false
     }
 }
@@ -184,7 +181,7 @@ function Show-Banner {
     Write-Host "  Package Manager: $PackageManager" -ForegroundColor Cyan
     Write-Host "  Running with Administrator privileges.`n" -ForegroundColor Green
     if ($DryRun) {
-        Write-Host "  ██████  DRY RUN MODE — Nothing will be installed  ██████`n" -ForegroundColor Yellow
+        Write-Host "  [DRY RUN MODE] Nothing will be installed`n" -ForegroundColor Yellow
     }
 }
 
@@ -268,7 +265,7 @@ function Show-Menu {
                 if (-not $SingleSelect) {
                     if ($MenuItems[$i].Installed) {
                         if ($MenuItems[$i].Selected) { $checkbox = "[X]"; $suffix = " (Force Reinstall)" }
-                        else { $checkbox = "[√]" }
+                        else { $checkbox = "[OK]" }
                     }
                     else {
                         $checkbox = if ($MenuItems[$i].Selected) { "[X]" } else { "[ ]" }
@@ -302,9 +299,9 @@ function Show-Menu {
 
 #endregion Helpers
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # REGION: Package Manager Operations
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 #region PackageManager
 
 function Assert-PackageManager {
@@ -330,11 +327,11 @@ function Assert-Winget {
         return
     }
 
-    Write-Log "Winget not found — downloading Microsoft App Installer..." -Level WARN
+    Write-Log "Winget not found - downloading Microsoft App Installer..." -Level WARN
 
     Invoke-Failsafe -Name "Install Winget" -Action {
         $progressPreference = 'silentlyContinue'
-        $url = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+        $url = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle "
         $output = "$env:TEMP\winget.msixbundle"
         Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing
         Add-AppxPackage -Path $output
@@ -351,12 +348,12 @@ function Assert-Chocolatey {
         return
     }
 
-    Write-Log "Chocolatey not found — installing..." -Level WARN
+    Write-Log "Chocolatey not found - installing..." -Level WARN
 
     Invoke-Failsafe -Name "Install Chocolatey" -Action {
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1 '))
         
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
         [System.Environment]::GetEnvironmentVariable("Path", "User")
@@ -378,7 +375,7 @@ function Install-StandardApp {
         Write-Log "[DRYRUN] Would install: $DisplayName ($AppId) via $PackageManager" -Level INFO
         Write-Host "  [DRYRUN] Simulating install of $DisplayName..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
-        Write-Log "[DRYRUN] $DisplayName — simulated OK." -Level OK
+        Write-Log "[DRYRUN] $DisplayName - simulated OK." -Level OK
         return $true
     }
 
@@ -451,18 +448,18 @@ function Install-WithWinget {
             return $false
         }
 
-        Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-        Write-Host "║  PACKAGE ID CHANGED — '$AppId' no longer exists" -ForegroundColor Yellow
-        Write-Host "║  Closest matches for '$DisplayName':" -ForegroundColor Yellow
-        Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+        Write-Host "`n+----------------------------------------------------------+" -ForegroundColor Yellow
+        Write-Host "|  PACKAGE ID CHANGED - '$AppId' no longer exists" -ForegroundColor Yellow
+        Write-Host "|  Closest matches for '$DisplayName':" -ForegroundColor Yellow
+        Write-Host "+----------------------------------------------------------+" -ForegroundColor Yellow
 
         for ($i = 0; $i -lt $foundApps.Count; $i++) {
-            $entry = "  [$($i+1)] $($foundApps[$i].Name)  →  $($foundApps[$i].Id)  (v$($foundApps[$i].Version))"
-            Write-Host ("║" + $entry.PadRight(58) + "║") -ForegroundColor White
+            $entry = "  [$($i+1)] $($foundApps[$i].Name)  ->  $($foundApps[$i].Id)  (v$($foundApps[$i].Version))"
+            Write-Host ("| " + $entry.PadRight(58) + "|") -ForegroundColor White
         }
 
-        Write-Host ("║  [S] Skip this app".PadRight(59) + "║") -ForegroundColor DarkGray
-        Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+        Write-Host ("|  [S] Skip this app".PadRight(59) + "|") -ForegroundColor DarkGray
+        Write-Host "+----------------------------------------------------------+" -ForegroundColor Yellow
 
         Write-Host "Pick a number (1-$($foundApps.Count)) or [S] to skip: " -NoNewline -ForegroundColor Cyan
 
@@ -548,18 +545,18 @@ function Install-WithChocolatey {
                 return $false
             }
 
-            Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-            Write-Host "║  PACKAGE NOT FOUND — '$PackageId'" -ForegroundColor Yellow
-            Write-Host "║  Closest matches in Chocolatey:" -ForegroundColor Yellow
-            Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+            Write-Host "`n+----------------------------------------------------------+" -ForegroundColor Yellow
+            Write-Host "|  PACKAGE NOT FOUND - '$PackageId'" -ForegroundColor Yellow
+            Write-Host "|  Closest matches in Chocolatey:" -ForegroundColor Yellow
+            Write-Host "+----------------------------------------------------------+" -ForegroundColor Yellow
 
             for ($i = 0; $i -lt $foundPackages.Count; $i++) {
                 $entry = "  [$($i+1)] $($foundPackages[$i].Id)  (v$($foundPackages[$i].Version))"
-                Write-Host ("║" + $entry.PadRight(58) + "║") -ForegroundColor White
+                Write-Host ("| " + $entry.PadRight(58) + "|") -ForegroundColor White
             }
 
-            Write-Host ("║  [S] Skip this app".PadRight(59) + "║") -ForegroundColor DarkGray
-            Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+            Write-Host ("|  [S] Skip this app".PadRight(59) + "|") -ForegroundColor DarkGray
+            Write-Host "+----------------------------------------------------------+" -ForegroundColor Yellow
 
             Write-Host "Pick a number (1-$($foundPackages.Count)) or [S] to skip: " -NoNewline -ForegroundColor Cyan
 
@@ -596,19 +593,19 @@ function Install-WithChocolatey {
 
 #endregion PackageManager
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # REGION: Core Application Installers
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 #region CoreInstallers
 
 function Install-TightVNC {
-    Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-    Write-Host "║              TightVNC Configuration                      ║" -ForegroundColor Magenta
-    Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Magenta
-    Write-Host "║  [1] No Password  (open access — home network)           ║" -ForegroundColor White
-    Write-Host "║  [2] Set Password (max 8 chars — TightVNC limit)         ║" -ForegroundColor White
-    Write-Host "║  [S] Skip TightVNC                                       ║" -ForegroundColor DarkGray
-    Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+    Write-Host "`n+----------------------------------------------------------+" -ForegroundColor Magenta
+    Write-Host "|              TightVNC Configuration                      |" -ForegroundColor Magenta
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Magenta
+    Write-Host "|  [1] No Password  (open access - home network)           |" -ForegroundColor White
+    Write-Host "|  [2] Set Password (max 8 chars - TightVNC limit)         |" -ForegroundColor White
+    Write-Host "|  [S] Skip TightVNC                                       |" -ForegroundColor DarkGray
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Magenta
 
     Write-Host "Choose (1/2/S): " -NoNewline -ForegroundColor Cyan
 
@@ -617,17 +614,17 @@ function Install-TightVNC {
     while ($true) {
         $pick = [System.Console]::ReadKey($true).KeyChar.ToString().ToUpper()
         if ($pick -eq '1') {
-            Write-Host "1 — No Password" -ForegroundColor Green
+            Write-Host "1 - No Password" -ForegroundColor Green
             $vncMode = "NoAuth"
             break
         }
         elseif ($pick -eq '2') {
-            Write-Host "2 — Set Password" -ForegroundColor Green
+            Write-Host "2 - Set Password" -ForegroundColor Green
             $vncMode = "Password"
             break
         }
         elseif ($pick -eq 'S') {
-            Write-Host "S — Skipped" -ForegroundColor Red
+            Write-Host "S - Skipped" -ForegroundColor Red
             Write-Log "User skipped TightVNC installation." -Level WARN
             return $false
         }
@@ -640,7 +637,7 @@ function Install-TightVNC {
             [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePass)
         )
         if ([string]::IsNullOrWhiteSpace($vncPassword)) {
-            Write-Log "Empty password entered — falling back to No Auth mode." -Level WARN
+            Write-Log "Empty password entered - falling back to No Auth mode." -Level WARN
             $vncMode = "NoAuth"
         }
     }
@@ -649,7 +646,7 @@ function Install-TightVNC {
         Write-Log "[DRYRUN] Would install TightVNC: mode=$vncMode via $PackageManager" -Level INFO
         Write-Host "  [DRYRUN] Simulating TightVNC install..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
-        Write-Log "[DRYRUN] TightVNC — simulated OK." -Level OK
+        Write-Log "[DRYRUN] TightVNC - simulated OK." -Level OK
         return $true
     }
 
@@ -661,7 +658,7 @@ function Install-TightVNC {
             
             try {
                 $arch = if ([Environment]::Is64BitOperatingSystem) { "64bit" } else { "32bit" }
-                $msiUrl = "https://github.com/Tight-VNC/tightvnc/releases/download/v2.8.85/tightvnc-2.8.85-gpl-setup-$arch.msi"
+                $msiUrl = "https://github.com/Tight-VNC/tightvnc/releases/download/v2.8.85/tightvnc-2.8.85-gpl-setup- $arch.msi"
                 $msiPath = "$tempDir\tightvnc.msi"
                 
                 Write-Log "Downloading TightVNC MSI ($arch)..." -Level INFO
@@ -680,8 +677,7 @@ function Install-TightVNC {
 
                 if ($vncMode -eq "NoAuth") {
                     $msiArgs += "VALUE_OF_USEVNCAUTHENTICATION=0"
-                }
-                else {
+                } else {
                     $msiArgs += "VALUE_OF_USEVNCAUTHENTICATION=1"
                     $msiArgs += "SET_PASSWORD=1"
                     $msiArgs += "VALUE_OF_PASSWORD=$vncPassword"
@@ -782,7 +778,7 @@ function Install-ZeroTier-AutoJoin {
         Write-Log "[DRYRUN] Would install ZeroTier One and join network $ZeroTierNetworkId via $PackageManager" -Level INFO
         Write-Host "  [DRYRUN] Simulating ZeroTier install + network join..." -ForegroundColor Yellow
         Start-Sleep -Seconds 1
-        Write-Log "[DRYRUN] ZeroTier — simulated OK." -Level OK
+        Write-Log "[DRYRUN] ZeroTier - simulated OK." -Level OK
         return $true
     }
 
@@ -792,8 +788,7 @@ function Install-ZeroTier-AutoJoin {
             if ($LASTEXITCODE -ne 0 -and $result -notmatch "already installed") {
                 throw "Chocolatey ZeroTier install exited with code $LASTEXITCODE"
             }
-        }
-        else {
+        } else {
             winget install --id ZeroTier.ZeroTierOne -e `
                 --accept-package-agreements `
                 --accept-source-agreements `
@@ -837,8 +832,7 @@ function Install-ZeroTier-AutoJoin {
                     if ($cliPath -match "zerotier-one_x(64|86)\.exe") {
                         # Use the service executable with -q switch for query/join commands
                         $joinOutput = & $cliPath -q join $ZeroTierNetworkId 2>&1
-                    }
-                    else {
+                    } else {
                         # Use standard CLI
                         $joinOutput = & $cliPath join $ZeroTierNetworkId 2>&1
                     }
@@ -881,7 +875,7 @@ function Install-ZeroTier-AutoJoin {
             $headers = @{ "X-ZT1-Auth" = $apiToken }
             $body = @{ id = $ZeroTierNetworkId; allowManaged = $true } | ConvertTo-Json
             
-            $response = Invoke-RestMethod -Uri "http://127.0.0.1:9993/network/$ZeroTierNetworkId" -Method Post -Headers $headers -Body $body -ErrorAction Stop
+            $response = Invoke-RestMethod -Uri "http://127.0.0.1:9993/network/ $ZeroTierNetworkId" -Method Post -Headers $headers -Body $body -ErrorAction Stop
             Write-Log "Successfully joined via API: $($response | ConvertTo-Json -Compress)" -Level OK
         }
         catch {
@@ -892,9 +886,9 @@ function Install-ZeroTier-AutoJoin {
 
 #endregion CoreInstallers
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # REGION: Repair & Security Tools
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 #region Repair Tools
 
 function Repair-WingetFull {
@@ -906,14 +900,14 @@ function Repair-WingetFull {
         return $true
     }
 
-    Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║           WINGET REPAIR & INSTALLATION                   ║" -ForegroundColor Cyan
-    Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-    Write-Host "║  This will download and install:                         ║" -ForegroundColor White
-    Write-Host "║    • Windows App Runtime 1.8                             ║" -ForegroundColor White
-    Write-Host "║    • VCLibs UWP Desktop Runtime                          ║" -ForegroundColor White
-    Write-Host "║    • Microsoft.DesktopAppInstaller (winget)              ║" -ForegroundColor White
-    Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "`n+----------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|           WINGET REPAIR & INSTALLATION                   |" -ForegroundColor Cyan
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|  This will download and install:                         |" -ForegroundColor White
+    Write-Host "|    * Windows App Runtime 1.8                           |" -ForegroundColor White
+    Write-Host "|    * VCLibs UWP Desktop Runtime                          |" -ForegroundColor White
+    Write-Host "|    * Microsoft.DesktopAppInstaller (winget)              |" -ForegroundColor White
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
 
     Write-Host "`nProceed with winget repair? (Y/N): " -NoNewline -ForegroundColor Yellow
     $confirm = $null
@@ -935,7 +929,7 @@ function Repair-WingetFull {
 
         try {
             Write-Log "Fetching latest winget release information..." -Level INFO
-            $apiUrl = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
+            $apiUrl = "https://api.github.com/repos/microsoft/winget-cli/releases/latest "
             $release = Invoke-RestMethod -Uri $apiUrl -UseBasicParsing
             
             $tagName = $release.tag_name
@@ -964,17 +958,17 @@ function Repair-WingetFull {
                         Write-Log "Installing dependency: $($dep.Name)" -Level INFO
                         try {
                             Add-AppxPackage -Path $dep.FullName -ErrorAction Stop
-                            Write-Log "  ✓ Installed: $($dep.Name)" -Level OK
+                            Write-Log "  OK Installed: $($dep.Name)" -Level OK
                         }
                         catch {
-                            Write-Log "  ⚠ Could not install $($dep.Name) (may already exist): $($_.Exception.Message)" -Level WARN
+                            Write-Log "  ! Could not install $($dep.Name) (may already exist): $($_.Exception.Message)" -Level WARN
                         }
                     }
                 }
             }
             else {
                 Write-Log "No dependencies package found, attempting to install VCLibs directly..." -Level WARN
-                $vcLibsUrl = "https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx"
+                $vcLibsUrl = "https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx "
                 $vcLibsPath = "$tempDir\Microsoft.VCLibs.x64.14.00.Desktop.appx"
                 try {
                     Invoke-WebRequest -Uri $vcLibsUrl -OutFile $vcLibsPath -UseBasicParsing
@@ -994,14 +988,14 @@ function Repair-WingetFull {
             
             try {
                 Add-AppxPackage -Path $wingetBundle -ErrorAction Stop
-                Write-Log "  ✓ Winget installed successfully" -Level OK
+                Write-Log "  OK Winget installed successfully" -Level OK
             }
             catch {
                 Write-Log "Standard install failed, attempting provisioned package install..." -Level WARN
                 
                 try {
                     Add-AppxProvisionedPackage -Online -PackagePath $wingetBundle -SkipLicense -ErrorAction Stop | Out-Null
-                    Write-Log "  ✓ Winget installed as provisioned package (SkipLicense)" -Level OK
+                    Write-Log "  OK Winget installed as provisioned package (SkipLicense)" -Level OK
                 }
                 catch {
                     if ($licenseUrl) {
@@ -1009,7 +1003,7 @@ function Repair-WingetFull {
                         $licenseFile = "$tempDir\license.xml"
                         Invoke-WebRequest -Uri $licenseUrl -OutFile $licenseFile -UseBasicParsing
                         Add-AppxProvisionedPackage -Online -PackagePath $wingetBundle -LicensePath $licenseFile -ErrorAction Stop | Out-Null
-                        Write-Log "  ✓ Winget installed as provisioned package (with license)" -Level OK
+                        Write-Log "  OK Winget installed as provisioned package (with license)" -Level OK
                     }
                     else {
                         throw "All installation methods failed. Last error: $($_.Exception.Message)"
@@ -1047,14 +1041,14 @@ function Repair-ChocolateyFull {
         return $true
     }
 
-    Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         CHOCOLATEY REPAIR & INSTALLATION                 ║" -ForegroundColor Cyan
-    Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-    Write-Host "║  This will:                                              ║" -ForegroundColor White
-    Write-Host "║    • Uninstall existing Chocolatey (if corrupt)          ║" -ForegroundColor White
-    Write-Host "║    • Reinstall Chocolatey from official source           ║" -ForegroundColor White
-    Write-Host "║    • Update environment PATH                             ║" -ForegroundColor White
-    Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "`n+----------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|         CHOCOLATEY REPAIR & INSTALLATION                 |" -ForegroundColor Cyan
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|  This will:                                              |" -ForegroundColor White
+    Write-Host "|    * Uninstall existing Chocolatey (if corrupt)          |" -ForegroundColor White
+    Write-Host "|    * Reinstall Chocolatey from official source           |" -ForegroundColor White
+    Write-Host "|    * Update environment PATH                             |" -ForegroundColor White
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
 
     Write-Host "`nProceed with Chocolatey repair? (Y/N): " -NoNewline -ForegroundColor Yellow
     $confirm = $null
@@ -1088,7 +1082,7 @@ function Repair-ChocolateyFull {
         Write-Log "Installing Chocolatey from official source..." -Level INFO
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1 '))
         
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
         [System.Environment]::GetEnvironmentVariable("Path", "User")
@@ -1105,15 +1099,15 @@ function Repair-ChocolateyFull {
 }
 
 function Switch-PackageManager {
-    Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         SWITCH PACKAGE MANAGER                           ║" -ForegroundColor Cyan
-    Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-    Write-Host "║  Current package manager: $PackageManager" -ForegroundColor Yellow
-    Write-Host "║                                                          ║" -ForegroundColor White
-    Write-Host "║  [1] Switch to Winget (Microsoft)                        ║" -ForegroundColor White
-    Write-Host "║  [2] Switch to Chocolatey (Community)                    ║" -ForegroundColor White
-    Write-Host "║  [S] Keep current setting                                ║" -ForegroundColor DarkGray
-    Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "`n+----------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|         SWITCH PACKAGE MANAGER                           |" -ForegroundColor Cyan
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|  Current package manager: $PackageManager" -ForegroundColor Yellow
+    Write-Host "|                                                          |" -ForegroundColor White
+    Write-Host "|  [1] Switch to Winget (Microsoft)                        |" -ForegroundColor White
+    Write-Host "|  [2] Switch to Chocolatey (Community)                    |" -ForegroundColor White
+    Write-Host "|  [S] Keep current setting                                |" -ForegroundColor DarkGray
+    Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
 
     Write-Host "`nSelect package manager (1/2/S): " -NoNewline -ForegroundColor Yellow
     
@@ -1127,8 +1121,7 @@ function Switch-PackageManager {
                 Write-Log "Package manager switched to: Winget" -Level OK
                 Write-Host "`n  Note: Winget will be used for all future installations." -ForegroundColor Cyan
                 Write-Host "  Run 'Repair/Install Winget + Dependencies' if needed." -ForegroundColor Yellow
-            }
-            else {
+            } else {
                 Write-Log "Package manager already set to Winget" -Level INFO
             }
             return $true
@@ -1140,8 +1133,7 @@ function Switch-PackageManager {
                 Write-Log "Package manager switched to: Chocolatey" -Level OK
                 Write-Host "`n  Note: Chocolatey will be used for all future installations." -ForegroundColor Cyan
                 Write-Host "  Run 'Repair/Install Chocolatey' if needed." -ForegroundColor Yellow
-            }
-            else {
+            } else {
                 Write-Log "Package manager already set to Chocolatey" -Level INFO
             }
             return $true
@@ -1200,7 +1192,7 @@ function Invoke-SFC {
     Invoke-Failsafe -Name "SFC /scannow" -Action {
         sfc /scannow
         if ($LASTEXITCODE -ne 0) {
-            Write-Log "SFC reported issues — check CBS.log for details." -Level WARN
+            Write-Log "SFC reported issues - check CBS.log for details." -Level WARN
         }
     }
 }
@@ -1219,10 +1211,10 @@ function Invoke-DISM {
 }
 
 function Invoke-DISM-WithProxy {
-    $proxyStr = Read-Host "Enter Proxy Address (e.g., http://192.168.1.50:8080 )"
+    $proxyStr = Read-Host "Enter Proxy Address (e.g., http://192.168.1.50:8080  )"
 
     if ([string]::IsNullOrWhiteSpace($proxyStr)) {
-        Write-Log "No proxy entered — skipping DISM with proxy." -Level WARN
+        Write-Log "No proxy entered - skipping DISM with proxy." -Level WARN
         return $false
     }
 
@@ -1248,27 +1240,27 @@ function Invoke-DISM-WithProxy {
 
 function Invoke-Massgrave {
     if ($DryRun) {
-        Write-Log "[DRYRUN] Would fetch and run Massgrave activation script from https://get.activated.win" -Level INFO
+        Write-Log "[DRYRUN] Would fetch and run Massgrave activation script from https://get.activated.win " -Level INFO
         Write-Host "  [DRYRUN] Simulating Massgrave execution..." -ForegroundColor Yellow
         return $true
     }
     
     Invoke-Failsafe -Name "Massgrave Activation Script" -Action {
         Write-Log "Fetching Massgrave script from GitHub..." -Level INFO
-        Invoke-RestMethod https://get.activated.win | Invoke-Expression
+        Invoke-RestMethod https://get.activated.win  | Invoke-Expression
     }
 }
 
 function Invoke-WinUtil {
     if ($DryRun) {
-        Write-Log "[DRYRUN] Would fetch and run Chris Titus WinUtil from https://christitus.com/win" -Level INFO
+        Write-Log "[DRYRUN] Would fetch and run Chris Titus WinUtil from https://christitus.com/win " -Level INFO
         Write-Host "  [DRYRUN] Simulating WinUtil execution..." -ForegroundColor Yellow
         return $true
     }
     
     Invoke-Failsafe -Name "Chris Titus WinUtil" -Action {
         Write-Log "Fetching WinUtil from christitus.com..." -Level INFO
-        Invoke-RestMethod https://christitus.com/win | Invoke-Expression
+        Invoke-RestMethod https://christitus.com/win  | Invoke-Expression
     }
 }
 
@@ -1298,7 +1290,7 @@ function Invoke-KVRT {
     }
 
     $downloaded = Invoke-Failsafe -Name "Download KVRT" -Action {
-        Invoke-WebRequest -Uri "https://devbuilds.s.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe" `
+        Invoke-WebRequest -Uri "https://devbuilds.s.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe " `
             -OutFile $kvrtPath -UseBasicParsing
         Write-Log "KVRT saved to $kvrtPath" -Level OK
     }
@@ -1323,15 +1315,15 @@ function Invoke-KVRT {
 
 #endregion Repair Tools
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # REGION: Main Application Loop
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 #region Main
 
 Write-Log ("=" * 60) -Level INFO
-Write-Log "OMNITX Setup v$ScriptVersion — Session started." -Level INFO
+Write-Log "OMNITX Setup v$ScriptVersion - Session started." -Level INFO
 Write-Log "Package Manager: $PackageManager" -Level INFO
-if ($DryRun) { Write-Log "DRY RUN MODE ENABLED — No changes will be made" -Level WARN }
+if ($DryRun) { Write-Log "DRY RUN MODE ENABLED - No changes will be made" -Level WARN }
 Write-Log ("=" * 60) -Level INFO
 
 while ($true) {
@@ -1361,11 +1353,11 @@ while ($true) {
         $skippedCount = 0
         $aborted = $false
 
-        Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-        Write-Host "║          APP INSTALLER — One by One                      ║" -ForegroundColor Cyan
-        Write-Host "║  Package Manager: $PackageManager" -ForegroundColor Yellow
-        Write-Host "║  [Y] Install   [N] Skip   [ESC] Abort remaining          ║" -ForegroundColor Cyan
-        Write-Host "╚══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+        Write-Host "`n+----------------------------------------------------------+" -ForegroundColor Cyan
+        Write-Host "|          APP INSTALLER - One by One                      |" -ForegroundColor Cyan
+        Write-Host "|  Package Manager: $PackageManager" -ForegroundColor Yellow
+        Write-Host "|  [Y] Install   [N] Skip   [ESC] Abort remaining          |" -ForegroundColor Cyan
+        Write-Host "+----------------------------------------------------------+`n" -ForegroundColor Cyan
 
         for ($idx = 0; $idx -lt $AppCatalog.Count; $idx++) {
             $app = $AppCatalog[$idx]
@@ -1375,14 +1367,14 @@ while ($true) {
             $num = $idx + 1
             $total = $AppCatalog.Count
             $tag = switch ($app.Type) {
-                "VNC" { "  [VNC — will configure]" }
+                "VNC" { "  [VNC - will configure]" }
                 "ZeroTier" { "  [Auto-join network]" }
                 default { "" }
             }
 
             $packageId = if ($PackageManager -eq "Chocolatey") { $app.ChocoId } else { $app.WingetId }
 
-            Write-Host ("─" * 60) -ForegroundColor DarkGray
+            Write-Host ("-" * 60) -ForegroundColor DarkGray
             Write-Host "  [$num/$total]  $($app.Display)$tag" -ForegroundColor White
             Write-Host "          Package: $packageId ($PackageManager)" -ForegroundColor DarkGray
             Write-Host "  Install? [Y/N/ESC]: " -NoNewline -ForegroundColor Yellow
@@ -1391,7 +1383,7 @@ while ($true) {
             while ($true) {
                 $k = [System.Console]::ReadKey($true)
                 if ($k.Key -eq 'Escape') {
-                    Write-Host "ESC — Aborting remaining apps." -ForegroundColor Red
+                    Write-Host "ESC - Aborting remaining apps." -ForegroundColor Red
                     Write-Log "User pressed ESC at app $num/$total ($($app.Display)). Aborting remaining." -Level WARN
                     $aborted = $true
                     $decision = "SKIP"
@@ -1404,7 +1396,7 @@ while ($true) {
                     break
                 }
                 elseif ($ch -eq 'N') {
-                    Write-Host "N — Skipped" -ForegroundColor DarkGray
+                    Write-Host "N - Skipped" -ForegroundColor DarkGray
                     $decision = "SKIP"
                     break
                 }
@@ -1436,7 +1428,7 @@ while ($true) {
         }
 
         if (-not $aborted) {
-            Write-Host ("─" * 60) -ForegroundColor DarkGray
+            Write-Host ("-" * 60) -ForegroundColor DarkGray
             Write-Host "`n  Install custom packages via $PackageManager? [Y/N]: " -NoNewline -ForegroundColor Magenta
             $doCustom = $false
             while ($true) {
@@ -1465,18 +1457,18 @@ while ($true) {
             }
         }
 
-        Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-        Write-Host "║                  INSTALLATION REPORT                     ║" -ForegroundColor Cyan
-        Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-        Write-Host ("║  Package Manager : $PackageManager".PadRight(58) + "║") -ForegroundColor Yellow
-        Write-Host ("║  Succeeded       : $successCount".PadRight(58) + "║") -ForegroundColor Green
-        Write-Host ("║  Skipped         : $skippedCount".PadRight(58) + "║") -ForegroundColor DarkGray
-        Write-Host ("║  Failed          : $failCount".PadRight(58) + "║") -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
-        Write-Host ("║  Log File        : $LogFile".PadRight(58) + "║") -ForegroundColor Yellow
+        Write-Host "`n+----------------------------------------------------------+" -ForegroundColor Cyan
+        Write-Host "|                  INSTALLATION REPORT                     |" -ForegroundColor Cyan
+        Write-Host "+----------------------------------------------------------+" -ForegroundColor Cyan
+        Write-Host ("|  Package Manager : $PackageManager".PadRight(58) + "|") -ForegroundColor Yellow
+        Write-Host ("|  Succeeded       : $successCount".PadRight(58) + "|") -ForegroundColor Green
+        Write-Host ("|  Skipped         : $skippedCount".PadRight(58) + "|") -ForegroundColor DarkGray
+        Write-Host ("|  Failed          : $failCount".PadRight(58) + "|") -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
+        Write-Host ("|  Log File        : $LogFile".PadRight(58) + "|") -ForegroundColor Yellow
         if ($DryRun) {
-            Write-Host ("║  Mode            : DRY RUN (no changes made)".PadRight(58) + "║") -ForegroundColor Yellow
+            Write-Host ("|  Mode            : DRY RUN (no changes made)".PadRight(58) + "|") -ForegroundColor Yellow
         }
-        Write-Host "╚══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+        Write-Host "+----------------------------------------------------------+`n" -ForegroundColor Cyan
 
         Write-Log "Installation complete. $successCount OK, $skippedCount skipped, $failCount failed." -Level $(if ($failCount -gt 0) { "WARN" } else { "OK" })
 
@@ -1489,7 +1481,7 @@ while ($true) {
 
         while ($true) {
             $fixItems = @(
-                [pscustomobject]@{ Display = "Switch Package Manager (Winget ↔ Chocolatey)"; Id = "SWITCH_PM"; Selected = $false }
+                [pscustomobject]@{ Display = "Switch Package Manager (Winget <-> Chocolatey)"; Id = "SWITCH_PM"; Selected = $false }
                 [pscustomobject]@{ Display = "Repair/Install Winget + Dependencies"; Id = "WINGET_REPAIR"; Selected = $false }
                 [pscustomobject]@{ Display = "Repair/Install Chocolatey"; Id = "CHOCO_REPAIR"; Selected = $false }
                 [pscustomobject]@{ Display = "Temporarily apply Cloudflare DNS (1.1.1.1)"; Id = "CF_DNS"; Selected = $false }
