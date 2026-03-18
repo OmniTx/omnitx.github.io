@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imran Ahmed — CV</title>
+    <style>
+        /* ── PRINT & SCREEN ── */
+        @page {
+            size: A4;
+            margin: 18mm 16mm 18mm 16mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 10.5pt;
+            line-height: 1.5;
+            color: #111;
+            background: #fff;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20mm 16mm;
+        }
+
+        /* ── HEADER ── */
+        .cv-header {
+            border-bottom: 2px solid #111;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+
+        .cv-name {
+            font-size: 22pt;
+            font-weight: bold;
+            letter-spacing: 0.02em;
+            line-height: 1.1;
+            font-family: Arial, sans-serif;
+        }
+
+        .cv-title {
+            font-size: 11pt;
+            color: #444;
+            margin-top: 3px;
+            font-family: Arial, sans-serif;
+        }
+
+        .cv-contact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 20px;
+            margin-top: 8px;
+            font-size: 9pt;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+
+        .cv-contact a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        /* ── SECTIONS ── */
+        .section {
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-size: 10pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-family: Arial, sans-serif;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 3px;
+            margin-bottom: 9px;
+            color: #111;
+        }
+
+        /* ── SUMMARY ── */
+        .summary {
+            font-size: 10pt;
+            color: #222;
+            line-height: 1.6;
+        }
+
+        /* ── SKILLS ── */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 24px;
+        }
+
+        .skill-row {
+            font-size: 9.5pt;
+            color: #222;
+            line-height: 1.5;
+        }
+
+        .skill-row strong {
+            font-family: Arial, sans-serif;
+            font-size: 9pt;
+        }
+
+        /* ── EXPERIENCE ── */
+        .exp-item {
+            margin-bottom: 12px;
+        }
+
+        .exp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .exp-role {
+            font-weight: bold;
+            font-size: 10.5pt;
+            font-family: Arial, sans-serif;
+        }
+
+        .exp-date {
+            font-size: 9pt;
+            color: #555;
+            white-space: nowrap;
+            font-family: Arial, sans-serif;
+        }
+
+        .exp-org {
+            font-size: 9.5pt;
+            color: #444;
+            font-style: italic;
+            margin-top: 1px;
+            margin-bottom: 4px;
+        }
+
+        .exp-desc {
+            font-size: 9.5pt;
+            color: #222;
+            line-height: 1.55;
+        }
+
+        .exp-desc ul {
+            padding-left: 14px;
+            margin-top: 3px;
+        }
+
+        .exp-desc li {
+            margin-bottom: 2px;
+        }
+
+        /* ── PROJECTS ── */
+        .project-item {
+            margin-bottom: 9px;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .project-name {
+            font-weight: bold;
+            font-size: 10pt;
+            font-family: Arial, sans-serif;
+        }
+
+        .project-link {
+            font-size: 8.5pt;
+            color: #555;
+            font-family: Arial, sans-serif;
+        }
+
+        .project-desc {
+            font-size: 9.5pt;
+            color: #222;
+            line-height: 1.5;
+            margin-top: 2px;
+        }
+
+        /* ── EDUCATION ── */
+        .edu-item {
+            margin-bottom: 8px;
+        }
+
+        .edu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .edu-degree {
+            font-weight: bold;
+            font-size: 10pt;
+            font-family: Arial, sans-serif;
+        }
+
+        .edu-date {
+            font-size: 9pt;
+            color: #555;
+            font-family: Arial, sans-serif;
+        }
+
+        .edu-org {
+            font-size: 9.5pt;
+            color: #444;
+            font-style: italic;
+        }
+
+        /* ── PRINT ── */
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            a {
+                color: #333 !important;
+                text-decoration: none !important;
+            }
+        }
+
+        /* ── SCREEN ONLY ── */
+        @media screen {
+            body {
+                padding: 20mm 16mm;
+                box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+                min-height: 297mm;
+            }
+
+            .print-btn {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #111;
+                color: #fff;
+                border: none;
+                padding: 10px 20px;
+                font-family: Arial, sans-serif;
+                font-size: 10pt;
+                cursor: pointer;
+                border-radius: 3px;
+                z-index: 999;
+            }
+
+            .print-btn:hover {
+                background: #333;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="print-btn no-print" onclick="window.print()">Print / Save PDF</button>
+
+    <!-- HEADER -->
+    <div class="cv-header">
+        <div class="cv-name">IMRAN AHMED</div>
+        <div class="cv-title">IT Manager · Designer · Developer · Self-hosting Engineer</div>
+        <div class="cv-contact">
+            <span>📍 Dhaka, Bangladesh</span>
+            <a href="mailto:imranomnitx@duck.com">imranomnitx@duck.com</a>
+            <a href="https://wa.me/8801840538790">+880 1840-538790</a>
+            <a href="https://github.com/omnitx">github.com/omnitx</a>
+            <a href="https://omnitx.github.io">omnitx.github.io</a>
+        </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="section">
+        <div class="section-title">Professional Summary</div>
+        <div class="summary">
+            Results-driven IT Manager and creative professional with 6+ years of experience managing IT infrastructure,
+            designing digital experiences, and producing video content. Proven track record delivering live client
+            websites, custom CRM systems, and automation workflows. Strong expertise in self-hosted cloud
+            infrastructure, Docker, Linux server administration, and n8n workflow automation. Designer first — with deep
+            experience in photo editing, video production, short films, live broadcast, and Adobe Suite. Currently
+            expanding expertise in applied AI solutions and real-world automation.
+        </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="section">
+        <div class="section-title">Core Skills</div>
+        <div class="skills-grid">
+            <div class="skill-row"><strong>Design & Media:</strong> Photoshop, Premiere Pro, After Effects, Figma,
+                Cinema 4D, Adobe XD, Live Streaming, Short Films, Video Production</div>
+            <div class="skill-row"><strong>Infrastructure:</strong> Docker, Portainer, Linux (Ubuntu), Nginx, Reverse
+                Proxy, SSL/TLS, Oracle Cloud, Self-hosting</div>
+            <div class="skill-row"><strong>Networking:</strong> ZeroTier, Tailscale, WireGuard, OpenWrt, Cloudflare, DNS
+                Management, Network Security</div>
+            <div class="skill-row"><strong>Development:</strong> WordPress, HTML/CSS, JavaScript, Adobe Scripting, n8n
+                Automation, REST APIs, PHP</div>
+            <div class="skill-row"><strong>IT Management:</strong> IT Infrastructure, Team Leadership, SEO, Digital
+                Strategy, Hardware & Software Management</div>
+            <div class="skill-row"><strong>AI & Automation:</strong> n8n Workflows, AI-assisted Development, Prompt
+                Engineering, Real-world AI Solutions</div>
+        </div>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="section">
+        <div class="section-title">Work Experience</div>
+
+        <div class="exp-item">
+            <div class="exp-header">
+                <span class="exp-role">IT Manager</span>
+                <span class="exp-date">January 2019 – Present</span>
+            </div>
+            <div class="exp-org">Herbs World Limited, Dhaka, Bangladesh</div>
+            <div class="exp-desc">
+                <ul>
+                    <li>Manage end-to-end IT infrastructure including network security, hardware, and software systems
+                    </li>
+                    <li>Lead WordPress website development and maintenance for herbsworld.net with SEO optimization</li>
+                    <li>Designed and deployed a custom CRM solution for sales pipeline and inventory management</li>
+                    <li>Oversee UI/UX design implementation and digital strategy across all company platforms</li>
+                    <li>Lead and coordinate the IT team, ensuring operational continuity and technical support</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="exp-item">
+            <div class="exp-header">
+                <span class="exp-role">Freelance Designer & Developer</span>
+                <span class="exp-date">January 2020 – Present</span>
+            </div>
+            <div class="exp-org">Self-employed, Dhaka, Bangladesh</div>
+            <div class="exp-desc">
+                <ul>
+                    <li>Designed and developed live e-commerce websites for clients including ajkerproducts.com and
+                        rabeyabookhouse.com</li>
+                    <li>Produced 500+ videos across channels immekun and imranah using After Effects and Premiere Pro
+                        since 2019</li>
+                    <li>Delivered 3D modeling, rendering, branding, and UI/UX design services for various clients</li>
+                    <li>Developed NeonIndex — an open-source PHP directory lister with neon-themed UI, delivered as an
+                        AI-assisted project</li>
+                    <li>Built and managed personal self-hosted cloud infrastructure on Oracle Cloud Free Tier (Mumbai)
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="exp-item">
+            <div class="exp-header">
+                <span class="exp-role">General Secretary — Cultural Club (BAFSK CC)</span>
+                <span class="exp-date">College Years</span>
+            </div>
+            <div class="exp-org">Bangladesh Air Force College Kurmitola (BAFSK), Dhaka</div>
+            <div class="exp-desc">
+                <ul>
+                    <li>Led IT operations, managed club photography, and organized all cultural events</li>
+                    <li>Coordinated and managed a team of club members across all activities and productions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="section">
+        <div class="section-title">Key Projects</div>
+
+        <div class="project-item">
+            <div class="project-header">
+                <span class="project-name">HWL CRM — Sales & Inventory Management System</span>
+                <span class="project-link">Internal · Herbs World Limited</span>
+            </div>
+            <div class="project-desc">Custom-built CRM solution for Herbs World Limited managing sales pipeline,
+                inventory tracking, and internal business operations.</div>
+        </div>
+
+        <div class="project-item">
+            <div class="project-header">
+                <span class="project-name">NeonIndex — PHP Directory Lister</span>
+                <span class="project-link">github.com/omnitx/NeonIndex</span>
+            </div>
+            <div class="project-desc">Open-source modern PHP directory lister with neon-themed UI, admin panel, and file
+                management. AI-assisted development and delivery.</div>
+        </div>
+
+        <div class="project-item">
+            <div class="project-header">
+                <span class="project-name">OMNITX Node 01 — Self-hosted Cloud Infrastructure</span>
+                <span class="project-link">imranah.pro.bd</span>
+            </div>
+            <div class="project-desc">Personal cloud node running on Oracle Cloud (Mumbai) with Docker, Portainer, Nginx
+                reverse proxy, ZeroTier mesh networking, n8n automation, and 10+ self-hosted services.</div>
+        </div>
+
+        <div class="project-item">
+            <div class="project-header">
+                <span class="project-name">Client Websites</span>
+                <span class="project-link">herbsworld.net · ajkerproducts.com · rabeyabookhouse.com</span>
+            </div>
+            <div class="project-desc">Full-stack design and development of three live e-commerce and corporate websites.
+                WordPress-based with custom UI/UX, SEO optimization, and ongoing maintenance.</div>
+        </div>
+    </div>
+
+    <!-- EDUCATION -->
+    <div class="section">
+        <div class="section-title">Education</div>
+
+        <div class="edu-item">
+            <div class="edu-header">
+                <span class="edu-degree">Bachelor's Degree (Currently Pursuing)</span>
+                <span class="edu-date">Present</span>
+            </div>
+            <div class="edu-org">Government Bangla College, Mirpur, Dhaka — Affiliated with University of Dhaka
+                (Transitioning to Dhaka Central University)</div>
+        </div>
+
+        <div class="edu-item">
+            <div class="edu-header">
+                <span class="edu-degree">Higher Secondary Certificate (HSC)</span>
+                <span class="edu-date">Completed</span>
+            </div>
+            <div class="edu-org">Bangladesh Air Force College Kurmitola (BAFSK), Dhaka</div>
+        </div>
+    </div>
+
+</body>
+
+</html>
