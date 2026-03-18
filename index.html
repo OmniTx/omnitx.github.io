@@ -1,341 +1,1242 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-    <title>Imran Ahmed — IT Manager & Developer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Imran Ahmed — Designer & Developer</title>
+    <meta name="description"
+        content="Imran Ahmed — IT Manager, Designer, and Self-hosting Enthusiast based in Dhaka, Bangladesh.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --mono: 'DM Mono', monospace;
+            --sans: 'DM Sans', sans-serif;
+            --display: 'Bebas Neue', sans-serif;
+        }
+
+        html[data-theme="dark"] {
+            --bg: #0a0a0a;
+            --ink: #f0ede8;
+            --ink-dim: rgba(240, 237, 232, 0.35);
+            --ink-muted: rgba(240, 237, 232, 0.15);
+            --accent: #cdff32;
+            --accent-dim: rgba(205, 255, 50, 0.08);
+            --accent-glow: rgba(205, 255, 50, 0.2);
+            --border: rgba(240, 237, 232, 0.08);
+            --card: rgba(255, 255, 255, 0.03);
+        }
+
+        html[data-theme="light"] {
+            --bg: #f5f2ed;
+            --ink: #0a0a0a;
+            --ink-dim: rgba(10, 10, 10, 0.45);
+            --ink-muted: rgba(10, 10, 10, 0.2);
+            --accent: #2a7a00;
+            --accent-dim: rgba(42, 122, 0, 0.07);
+            --accent-glow: rgba(42, 122, 0, 0.2);
+            --border: rgba(10, 10, 10, 0.1);
+            --card: rgba(0, 0, 0, 0.02);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 32px 80px;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 32px 0 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            font-family: var(--display);
+            font-size: 1.4rem;
+            letter-spacing: 0.05em;
+            color: var(--ink);
+        }
+
+        .brand span {
+            color: var(--accent);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        nav a {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--ink-dim);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--accent);
+        }
+
+        .theme-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--ink-dim);
+            width: 30px;
+            height: 30px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .theme-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .theme-btn svg {
+            width: 13px;
+            height: 13px;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            padding: 60px 0 48px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero-tag {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            color: var(--accent);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .hero-title {
+            font-family: var(--display);
+            font-size: clamp(5rem, 13vw, 12rem);
+            line-height: 0.88;
+            letter-spacing: -0.01em;
+        }
+
+        .hero-title .outline {
+            -webkit-text-stroke: 2px var(--accent);
+            color: transparent;
+            display: block;
+        }
+
+        .hero-title .solid {
+            display: block;
+        }
+
+        .hero-bottom {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-top: 32px;
+            gap: 24px;
+        }
+
+        .hero-desc {
+            font-size: 0.82rem;
+            color: var(--ink-dim);
+            max-width: 380px;
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            border-radius: 2px;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .btn-accent:hover {
+            opacity: 0.85;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--ink-dim);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── MARQUEE ── */
+        .marquee-wrap {
+            overflow: hidden;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 32px;
+            background: var(--accent-dim);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .marquee-track {
+            display: flex;
+            animation: marquee 30s linear infinite;
+            white-space: nowrap;
+        }
+
+        .marquee-track span {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent);
+            padding: 0 24px;
+        }
+
+        .marquee-track .sep {
+            color: var(--ink-muted);
+            padding: 0;
+        }
+
+        @keyframes marquee {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* ── SECTIONS ── */
+        .section {
+            padding: 60px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-family: var(--display);
+            font-size: 4rem;
+            letter-spacing: 0.02em;
+            line-height: 1;
+        }
+
+        .section-tag {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            color: var(--ink-muted);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        /* ── SKILLS GRID ── */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .skill-card {
+            background: var(--bg);
+            padding: 28px 24px;
+            transition: background 0.2s;
+        }
+
+        .skill-card:hover {
+            background: var(--card);
+        }
+
+        .skill-icon {
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .skill-name {
+            font-family: var(--display);
+            font-size: 1.6rem;
+            letter-spacing: 0.03em;
+            margin-bottom: 8px;
+        }
+
+        .skill-desc {
+            font-size: 0.72rem;
+            color: var(--ink-dim);
+            line-height: 1.5;
+            font-weight: 300;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            letter-spacing: 0.1em;
+            color: var(--ink-muted);
+            border: 1px solid var(--border);
+            padding: 3px 8px;
+            border-radius: 2px;
+        }
+
+        /* ── EXPERIENCE ── */
+        .exp-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .exp-item {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 32px;
+            padding: 28px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .exp-item:last-child {
+            border-bottom: none;
+        }
+
+        .exp-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .exp-date {
+            font-family: var(--mono);
+            font-size: 0.58rem;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .exp-org {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            color: var(--ink-muted);
+            letter-spacing: 0.08em;
+        }
+
+        .exp-role {
+            font-family: var(--display);
+            font-size: 1.8rem;
+            letter-spacing: 0.02em;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .exp-desc {
+            font-size: 0.78rem;
+            color: var(--ink-dim);
+            line-height: 1.65;
+            font-weight: 300;
+            max-width: 560px;
+        }
+
+        /* ── GITHUB STATS ── */
+        .github-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+
+        .gh-stat {
+            background: var(--bg);
+            padding: 28px 24px;
+            text-align: center;
+        }
+
+        .gh-num {
+            font-family: var(--display);
+            font-size: 3rem;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .gh-label {
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            color: var(--ink-muted);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        /* ── PROJECTS GRID ── */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            margin-bottom: 1px;
+        }
+
+        .project-card {
+            background: var(--bg);
+            padding: 28px 24px;
+            text-decoration: none;
+            color: var(--ink);
+            transition: background 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card:hover {
+            background: var(--card);
+        }
+
+        .project-card:hover .project-name {
+            color: var(--accent);
+        }
+
+        .project-card:hover .project-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .project-num {
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .project-name {
+            font-family: var(--display);
+            font-size: 1.8rem;
+            letter-spacing: 0.02em;
+            line-height: 1;
+            margin-bottom: 10px;
+            transition: color 0.2s;
+        }
+
+        .project-type {
+            font-family: var(--mono);
+            font-size: 0.58rem;
+            color: var(--ink-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .project-desc {
+            font-size: 0.72rem;
+            color: var(--ink-dim);
+            line-height: 1.55;
+            font-weight: 300;
+            flex: 1;
+        }
+
+        .project-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .project-arrow {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            color: var(--accent);
+            opacity: 0;
+            transform: translateX(-6px);
+            transition: opacity 0.2s, transform 0.2s;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        /* ── CONTACT ── */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .contact-card {
+            background: var(--bg);
+            padding: 32px 28px;
+            text-decoration: none;
+            color: var(--ink);
+            transition: background 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .contact-card:hover {
+            background: var(--card);
+        }
+
+        .contact-card:hover .contact-label {
+            color: var(--accent);
+        }
+
+        .contact-label {
+            font-family: var(--mono);
+            font-size: 0.58rem;
+            color: var(--ink-muted);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+
+        .contact-value {
+            font-family: var(--display);
+            font-size: 1.4rem;
+            letter-spacing: 0.03em;
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            padding: 28px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-text {
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            color: var(--ink-muted);
+            letter-spacing: 0.1em;
+        }
+
+        /* ── CURSOR ── */
+        .cursor-dot {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .cursor-ring {
+            position: fixed;
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s, width 0.25s, height 0.25s;
+        }
+
+        .cursor-dot.active,
+        .cursor-ring.active {
+            opacity: 1;
+        }
+
+        .cursor-ring.hovering {
+            width: 44px;
+            height: 44px;
+        }
+
+        body.custom-cursor * {
+            cursor: none !important;
+        }
+
+        /* ── REVEAL ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: reveal 0.6s ease forwards;
+        }
+
+        @keyframes reveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .r1 {
+            animation-delay: 0.05s
+        }
+
+        .r2 {
+            animation-delay: 0.1s
+        }
+
+        .r3 {
+            animation-delay: 0.15s
+        }
+
+        .r4 {
+            animation-delay: 0.2s
+        }
+
+        .r5 {
+            animation-delay: 0.25s
+        }
+
+        .r6 {
+            animation-delay: 0.3s
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .page {
+                padding: 0 20px 60px;
+            }
+
+            .hero-title {
+                font-size: clamp(3.5rem, 16vw, 7rem);
+            }
+
+            .hero-bottom {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .github-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .exp-item {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .section-title {
+                font-size: 2.8rem;
+            }
+
+            .footer {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
 </head>
 
-<body class="min-h-screen">
+<body>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 header-nav">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <a href="#" class="font-mono font-bold text-lg tracking-tight flex items-center gap-2" id="nav-name">
-                    <span class="w-3 h-3 rounded-sm" style="background: var(--accent);"></span>
-                    Imran Ahmed
-                </a>
-                <div class="flex items-center gap-4">
-                    <a href="#skills"
-                        class="text-sm font-medium hover:text-[var(--accent)] transition-colors hidden sm:block">Skills</a>
-                    <a href="#work"
-                        class="text-sm font-medium hover:text-[var(--accent)] transition-colors hidden sm:block">Projects</a>
-                    <a href="#experience"
-                        class="text-sm font-medium hover:text-[var(--accent)] transition-colors hidden sm:block">Experience</a>
-                    <button id="theme-toggle" class="p-2 rounded-lg hover:bg-[var(--bg-alt)] transition-colors"
-                        aria-label="Toggle dark mode">
-                        <svg id="sun-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        <svg id="moon-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div class="cursor-dot" id="cursorDot"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
 
-    <!-- Hero Section -->
-    <header class="pt-32 pb-20 px-4 dot-pattern">
-        <div class="max-w-6xl mx-auto">
-            <div class="max-w-3xl animate-fade-in-up flex flex-col md:flex-row items-center gap-8 md:gap-12">
+    <div class="page">
 
-                <!-- Avatar -->
-                <div class="shrink-0 relative">
-                    <div id="avatar-skeleton" class="w-32 h-32 md:w-40 md:h-40 rounded-full skeleton absolute inset-0">
-                    </div>
-                    <img id="avatar-img"
-                        src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                        alt="Imran Ahmed Avatar"
-                        class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover relative z-10 border-4 opacity-0 transition-opacity duration-300"
-                        style="border-color: var(--border);">
-                </div>
-
-                <div class="text-center md:text-left">
-                    <p class="font-mono text-sm tracking-widest uppercase mb-4" style="color: var(--accent);">IT Manager
-                        & Developer</p>
-                    <h1 id="hero-name" class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4">
-                        Imran Ahmed
-                    </h1>
-                    <p id="hero-bio" class="text-lg sm:text-xl leading-relaxed mb-8" style="color: var(--fg-muted);">
-                        IT Manager at Herbs World Limited with expertise in IT infrastructure, WordPress development,
-                        and UI/UX design.
-                    </p>
-                    <div class="flex flex-wrap gap-4 justify-center md:justify-start">
-                        <a href="#work" class="btn-primary px-6 py-3 rounded-lg font-medium gap-2">
-                            View Projects
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                        </a>
-                        <a id="github-btn" href="https://github.com/omnitx" target="_blank" rel="noopener noreferrer"
-                            class="btn-secondary px-6 py-3 rounded-lg font-medium gap-2">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-                            </svg>
-                            GitHub Profile
-                        </a>
-                        <button id="setup-btn" onclick="copySetupCommand()"
-                            class="btn-secondary px-6 py-3 rounded-lg font-medium gap-2"
-                            title="Copy setup command to clipboard" style="position: relative;">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span id="setup-btn-text">Setup Script</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Core Skills Section -->
-    <section id="skills" class="py-16 px-4" style="background: var(--bg-alt);">
-        <div class="max-w-6xl mx-auto">
-            <div class="mb-12 reveal text-center">
-                <p class="font-mono text-sm tracking-widest uppercase mb-2" style="color: var(--accent);">Proficiencies
-                </p>
-                <h2 class="text-3xl sm:text-4xl font-bold">Core Skills</h2>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="reveal p-6 rounded-xl text-center"
-                    style="background: var(--card); border: 1px solid var(--border);">
-                    <div class="w-12 h-12 mx-auto mb-4 rounded-lg flex items-center justify-center"
-                        style="background: rgba(0, 255, 136, 0.1);">
-                        <svg class="w-6 h-6" style="color: var(--accent);" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
-                            </path>
-                        </svg>
-                    </div>
-                    <h3 class="font-bold mb-1">IT Infrastructure</h3>
-                    <p class="text-xs" style="color: var(--fg-muted);">Network Security & Management</p>
-                </div>
-                <div class="reveal p-6 rounded-xl text-center"
-                    style="background: var(--card); border: 1px solid var(--border); transition-delay: 0.1s;">
-                    <div class="w-12 h-12 mx-auto mb-4 rounded-lg flex items-center justify-center"
-                        style="background: rgba(0, 255, 136, 0.1);">
-                        <svg class="w-6 h-6" style="color: var(--accent);" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01">
-                            </path>
-                        </svg>
-                    </div>
-                    <h3 class="font-bold mb-1">UI/UX Design</h3>
-                    <p class="text-xs" style="color: var(--fg-muted);">Figma, XD, Photoshop</p>
-                </div>
-                <!-- Updated Skill: Cinema 4D -->
-                <div class="reveal p-6 rounded-xl text-center"
-                    style="background: var(--card); border: 1px solid var(--border); transition-delay: 0.2s;">
-                    <div class="w-12 h-12 mx-auto mb-4 rounded-lg flex items-center justify-center"
-                        style="background: rgba(0, 255, 136, 0.1);">
-                        <svg class="w-6 h-6" style="color: var(--accent);" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5">
-                            </path>
-                        </svg>
-                    </div>
-                    <h3 class="font-bold mb-1">3D Modeling</h3>
-                    <p class="text-xs" style="color: var(--fg-muted);">Cinema 4D & Rendering</p>
-                </div>
-                <div class="reveal p-6 rounded-xl text-center"
-                    style="background: var(--card); border: 1px solid var(--border); transition-delay: 0.3s;">
-                    <div class="w-12 h-12 mx-auto mb-4 rounded-lg flex items-center justify-center"
-                        style="background: rgba(0, 255, 136, 0.1);">
-                        <svg class="w-6 h-6" style="color: var(--accent);" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                        </svg>
-                    </div>
-                    <h3 class="font-bold mb-1">Web Development</h3>
-                    <p class="text-xs" style="color: var(--fg-muted);">WordPress & Custom</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats Panel -->
-    <section id="metrics" class="py-16 px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="reveal p-6 rounded-xl text-center"
-                    style="background: var(--card); border: 1px solid var(--border);">
-                    <p class="metric-value text-4xl font-bold" id="stat-repos">-</p>
-                    <p class="font-mono text-xs uppercase tracking-wider mt-2" style="color: var(--fg-muted);">
-                        Repositories</p>
-                </div>
-                <div class="reveal p-6 rounded-xl text-center"
-                    style="background: var(--card); border: 1px solid var(--border); transition-delay: 0.1s;">
-                    <p class="metric-value text-4xl font-bold" id="stat-followers">-</p>
-                    <p class="font-mono text-xs uppercase tracking-wider mt-2" style="color: var(--fg-muted);">Followers
-                    </p>
-                </div>
-                <div class="reveal p-6 rounded-xl text-center"
-                    style="background: var(--card); border: 1px solid var(--border); transition-delay: 0.2s;">
-                    <p class="metric-value text-4xl font-bold" id="stat-stars">-</p>
-                    <p class="font-mono text-xs uppercase tracking-wider mt-2" style="color: var(--fg-muted);">Stars
-                        Earned</p>
-                </div>
-                <div class="reveal p-6 rounded-xl text-center"
-                    style="background: var(--card); border: 1px solid var(--border); transition-delay: 0.3s;">
-                    <p class="metric-value text-4xl font-bold" id="stat-forks">-</p>
-                    <p class="font-mono text-xs uppercase tracking-wider mt-2" style="color: var(--fg-muted);">Forks</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Projects -->
-    <section id="work" class="py-20 px-4" style="background: var(--bg-alt);">
-        <div class="max-w-6xl mx-auto">
-            <div class="mb-16 reveal">
-                <p class="font-mono text-sm tracking-widest uppercase mb-2" style="color: var(--accent);">GitHub</p>
-                <h2 class="text-3xl sm:text-4xl font-bold">Open Source Projects</h2>
-            </div>
-
-            <div id="project-grid" class="grid md:grid-cols-2 gap-8">
-                <div class="skeleton h-64 rounded-xl"></div>
-                <div class="skeleton h-64 rounded-xl"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Experience & Education Timeline -->
-    <section id="experience" class="py-20 px-4">
-        <div class="max-w-4xl mx-auto">
-            <div class="mb-16 reveal text-center">
-                <p class="font-mono text-sm tracking-widest uppercase mb-2" style="color: var(--accent);">Background</p>
-                <h2 class="text-3xl sm:text-4xl font-bold">Experience & Education</h2>
-            </div>
-
-            <div class="relative">
-                <div class="timeline-line"></div>
-
-                <!-- Timeline Item 1: Herbs World -->
-                <div class="reveal relative md:pr-[calc(50%+2rem)] md:text-right mb-12 pl-12 md:pl-0">
-                    <div class="timeline-dot"></div>
-                    <div class="p-6 rounded-xl" style="background: var(--card); border: 1px solid var(--border);">
-                        <p class="font-mono text-xs mb-2" style="color: var(--accent);">Jan 2019 - Present</p>
-                        <h3 class="text-xl font-bold mb-1">IT Manager</h3>
-                        <p class="font-medium mb-3" style="color: var(--fg-muted);">Herbs World Limited</p>
-                        <p class="text-sm mb-4" style="color: var(--fg-muted);">
-                            Managing IT infrastructure, network security, and WordPress development. Overseeing UI/UX
-                            design implementation and SEO optimization strategies.
-                        </p>
-                        <div class="flex flex-wrap gap-2 md:justify-end">
-                            <span class="font-mono text-xs px-2 py-1 rounded"
-                                style="background: var(--bg-alt); border: 1px solid var(--border);">WordPress</span>
-                            <span class="font-mono text-xs px-2 py-1 rounded"
-                                style="background: var(--bg-alt); border: 1px solid var(--border);">SEO</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Timeline Item 2: Freelance (Updated Tag) -->
-                <div class="reveal relative md:pl-[calc(50%+2rem)] pl-12 mb-12" style="transition-delay: 0.1s;">
-                    <div class="timeline-dot"></div>
-                    <div class="p-6 rounded-xl" style="background: var(--card); border: 1px solid var(--border);">
-                        <p class="font-mono text-xs mb-2" style="color: var(--accent);">Jan 2020 - Present</p>
-                        <h3 class="text-xl font-bold mb-1">Freelance Designer</h3>
-                        <p class="font-medium mb-3" style="color: var(--fg-muted);">Self-employed</p>
-                        <p class="text-sm mb-4" style="color: var(--fg-muted);">
-                            Providing 3D modeling, rendering, and comprehensive UI/UX design services for various
-                            clients.
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="font-mono text-xs px-2 py-1 rounded"
-                                style="background: var(--bg-alt); border: 1px solid var(--border);">Cinema 4D</span>
-                            <span class="font-mono text-xs px-2 py-1 rounded"
-                                style="background: var(--bg-alt); border: 1px solid var(--border);">UI/UX</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Timeline Item 3: Education -->
-                <div class="reveal relative md:pr-[calc(50%+2rem)] md:text-right pl-12 md:pl-0"
-                    style="transition-delay: 0.2s;">
-                    <div class="timeline-dot"></div>
-                    <div class="p-6 rounded-xl" style="background: var(--card); border: 1px solid var(--border);">
-                        <p class="font-mono text-xs mb-2" style="color: var(--accent);">Currently Pursuing</p>
-                        <h3 class="text-xl font-bold mb-1">Bachelor's Degree</h3>
-                        <p class="font-medium mb-3" style="color: var(--fg-muted);">University Name</p>
-                        <p class="text-sm" style="color: var(--fg-muted);">
-                            Focusing on computer science fundamentals and software engineering principles.
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-20 px-4" style="background: var(--bg-alt);">
-        <div class="max-w-2xl mx-auto text-center reveal">
-            <h2 class="text-3xl sm:text-4xl font-bold mb-8">Contact</h2>
-
-            <div class="grid sm:grid-cols-2 gap-6 mb-8">
-                <!-- Updated Email -->
-                <a href="mailto:imranomnitx@duck.com"
-                    class="p-6 rounded-xl text-left group hover:border-[var(--accent)] transition-colors"
-                    style="background: var(--card); border: 1px solid var(--border);">
-                    <p class="font-mono text-xs uppercase tracking-wider mb-2" style="color: var(--accent);">Email</p>
-                    <p class="font-medium group-hover:text-[var(--accent)] transition-colors break-all">
-                        imranomnitx@duck.com</p>
-                </a>
-                <!-- Updated WhatsApp -->
-                <a href="https://wa.me/8801840538790" target="_blank" rel="noopener noreferrer"
-                    class="p-6 rounded-xl text-left group hover:border-[var(--accent)] transition-colors"
-                    style="background: var(--card); border: 1px solid var(--border);">
-                    <p class="font-mono text-xs uppercase tracking-wider mb-2" style="color: var(--accent);">WhatsApp
-                    </p>
-                    <p class="font-medium group-hover:text-[var(--accent)] transition-colors">+880 1840-538790</p>
-                </a>
-            </div>
-
-            <a href="https://github.com/omnitx" target="_blank" rel="noopener noreferrer"
-                class="btn-primary px-6 py-3 rounded-lg font-medium gap-2">
-                View GitHub Profile
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        <!-- HEADER -->
+        <header class="header reveal r1">
+            <div class="brand">IMRAN<span>.</span>AHMED</div>
+            <nav>
+                <a href="#skills">Skills</a>
+                <a href="#projects">Projects</a>
+                <a href="#experience">Experience</a>
+                <a href="#github">Open Source</a>
+                <a href="#contact">Contact</a>
+                <a href="/cv.pdf" download
+                    style="color:var(--accent);border:1px solid var(--accent);padding:4px 12px;border-radius:2px;">CV
+                    ↓</a>
+            </nav>
+            <button class="theme-btn" id="theme-toggle" aria-label="Toggle theme">
+                <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                    <circle cx="12" cy="12" r="4" />
+                    <path
+                        d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
                 </svg>
-            </a>
+                <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- HERO -->
+        <section class="hero reveal r2">
+            <div class="hero-tag">Designer · Developer · Self-hoster · Dhaka, BD</div>
+            <h1 class="hero-title">
+                <span class="solid">CREATIVE</span>
+                <span class="outline">BUILDER</span>
+            </h1>
+            <div class="hero-bottom">
+                <p class="hero-desc">IT Manager at Herbs World Limited. I design, build, and self-host — from short
+                    films and live broadcasts to cloud infrastructure and automation workflows. Designer first, engineer
+                    always.</p>
+                <div class="hero-actions">
+                    <a href="https://github.com/omnitx" target="_blank" class="btn btn-accent">GitHub Profile</a>
+                    <a href="#contact" class="btn btn-outline">Get in Touch</a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MARQUEE -->
+    <div class="marquee-wrap reveal r3">
+        <div class="marquee-track">
+            <span>Photo Editing</span><span class="sep">·</span>
+            <span>Video Production</span><span class="sep">·</span>
+            <span>Live Broadcast</span><span class="sep">·</span>
+            <span>Short Films</span><span class="sep">·</span>
+            <span>Adobe Suite</span><span class="sep">·</span>
+            <span>Docker</span><span class="sep">·</span>
+            <span>n8n Automation</span><span class="sep">·</span>
+            <span>Linux Admin</span><span class="sep">·</span>
+            <span>Self-hosting</span><span class="sep">·</span>
+            <span>ZeroTier</span><span class="sep">·</span>
+            <span>Nginx</span><span class="sep">·</span>
+            <span>WordPress</span><span class="sep">·</span>
+            <!-- duplicate -->
+            <span>Photo Editing</span><span class="sep">·</span>
+            <span>Video Production</span><span class="sep">·</span>
+            <span>Live Broadcast</span><span class="sep">·</span>
+            <span>Short Films</span><span class="sep">·</span>
+            <span>Adobe Suite</span><span class="sep">·</span>
+            <span>Docker</span><span class="sep">·</span>
+            <span>n8n Automation</span><span class="sep">·</span>
+            <span>Linux Admin</span><span class="sep">·</span>
+            <span>Self-hosting</span><span class="sep">·</span>
+            <span>ZeroTier</span><span class="sep">·</span>
+            <span>Nginx</span><span class="sep">·</span>
+            <span>WordPress</span><span class="sep">·</span>
         </div>
-    </section>
+    </div>
 
-    <!-- Footer -->
-    <footer class="py-12 px-4 border-t" style="border-color: var(--border);">
-        <div class="max-w-6xl mx-auto text-center">
-            <p class="font-mono text-sm" style="color: var(--fg-muted);">
-                <!-- Dynamic Year Script -->
-                &copy; <span id="footer-year"></span> Designed & Built by Imran Ahmed.
-            </p>
-        </div>
-    </footer>
+    <div class="page">
 
+        <!-- SKILLS -->
+        <section class="section reveal r3" id="skills">
+            <div class="section-header">
+                <h2 class="section-title">SKILLS</h2>
+                <span class="section-tag">What I do</span>
+            </div>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <div class="skill-icon">01 · Creative</div>
+                    <div class="skill-name">Design & Media</div>
+                    <div class="skill-desc">Photo editing, video production, short films, live broadcast, and short-form
+                        content creation. Designer first — always.</div>
+                    <div class="skill-tags">
+                        <span class="tag">Photoshop</span>
+                        <span class="tag">Premiere Pro</span>
+                        <span class="tag">After Effects</span>
+                        <span class="tag">Figma</span>
+                        <span class="tag">Cinema 4D</span>
+                        <span class="tag">Live Streaming</span>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">02 · Infrastructure</div>
+                    <div class="skill-name">Self-hosting & Cloud</div>
+                    <div class="skill-desc">Running personal cloud infrastructure on Oracle Free Tier. Dockerized
+                        services, reverse proxies, SSL, and ZeroTier mesh networking.</div>
+                    <div class="skill-tags">
+                        <span class="tag">Docker</span>
+                        <span class="tag">Portainer</span>
+                        <span class="tag">Linux</span>
+                        <span class="tag">Nginx</span>
+                        <span class="tag">ZeroTier</span>
+                        <span class="tag">Tailscale</span>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">03 · Automation</div>
+                    <div class="skill-name">Workflow & Dev</div>
+                    <div class="skill-desc">Building automation workflows with n8n, WordPress development, custom web
+                        builds, and Adobe scripting with JavaScript.</div>
+                    <div class="skill-tags">
+                        <span class="tag">n8n</span>
+                        <span class="tag">WordPress</span>
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">Adobe Scripts</span>
+                        <span class="tag">HTML/CSS</span>
+                        <span class="tag">REST APIs</span>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">04 · Networking</div>
+                    <div class="skill-name">Network & Security</div>
+                    <div class="skill-desc">Network security, management, VPN setup, mesh networking, and reverse proxy
+                        configuration across personal and enterprise setups.</div>
+                    <div class="skill-tags">
+                        <span class="tag">WireGuard</span>
+                        <span class="tag">Nginx Proxy</span>
+                        <span class="tag">OpenWrt</span>
+                        <span class="tag">Cloudflare</span>
+                        <span class="tag">DNS</span>
+                        <span class="tag">SSL/TLS</span>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">05 · Web</div>
+                    <div class="skill-name">UI/UX & Web</div>
+                    <div class="skill-desc">End-to-end UI/UX design and implementation. Designing for usability while
+                        maintaining strong visual identity and brand consistency.</div>
+                    <div class="skill-tags">
+                        <span class="tag">Figma</span>
+                        <span class="tag">XD</span>
+                        <span class="tag">WordPress</span>
+                        <span class="tag">SEO</span>
+                        <span class="tag">HTML/CSS</span>
+                        <span class="tag">Responsive</span>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">06 · IT</div>
+                    <div class="skill-name">IT Management</div>
+                    <div class="skill-desc">Managing IT infrastructure, hardware, software, and teams. Overseeing
+                        digital strategy, SEO, and technical operations at scale.</div>
+                    <div class="skill-tags">
+                        <span class="tag">IT Infrastructure</span>
+                        <span class="tag">Team Management</span>
+                        <span class="tag">SEO</span>
+                        <span class="tag">Strategy</span>
+                        <span class="tag">Support</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <script src="script.js"></script>
+        <!-- PROJECTS -->
+        <section class="section reveal r4" id="projects">
+            <div class="section-header">
+                <h2 class="section-title">PROJECTS</h2>
+                <span class="section-tag">Work & builds</span>
+            </div>
+            <div class="projects-grid">
+
+                <a href="https://herbsworld.net" target="_blank" rel="noopener" class="project-card">
+                    <div class="project-num">01 · Live Client</div>
+                    <div class="project-name">Herbs World</div>
+                    <div class="project-type">E-commerce & Corporate</div>
+                    <div class="project-desc">Full website design, development and ongoing IT management for Herbs World
+                        Limited. WordPress-based with custom UI, SEO optimization, and product management.</div>
+                    <div class="project-footer">
+                        <div class="project-tags">
+                            <span class="tag">WordPress</span>
+                            <span class="tag">UI/UX</span>
+                            <span class="tag">SEO</span>
+                        </div>
+                        <span class="project-arrow">↗</span>
+                    </div>
+                </a>
+
+                <a href="https://ajkerproducts.com" target="_blank" rel="noopener" class="project-card">
+                    <div class="project-num">02 · Live Client</div>
+                    <div class="project-name">Ajker Products</div>
+                    <div class="project-type">E-commerce</div>
+                    <div class="project-desc">E-commerce platform design and development. Custom product pages, category
+                        management, and performance-optimized shopping experience built on WordPress.</div>
+                    <div class="project-footer">
+                        <div class="project-tags">
+                            <span class="tag">WordPress</span>
+                            <span class="tag">WooCommerce</span>
+                            <span class="tag">UI/UX</span>
+                        </div>
+                        <span class="project-arrow">↗</span>
+                    </div>
+                </a>
+
+                <a href="https://rabeyabookhouse.com" target="_blank" rel="noopener" class="project-card">
+                    <div class="project-num">03 · Live Client</div>
+                    <div class="project-name">Rabeya Book House</div>
+                    <div class="project-type">E-commerce & Publishing</div>
+                    <div class="project-desc">Complete web presence for a book publisher and retailer. Custom design,
+                        product catalog, and digital storefront built to reflect the brand's identity.</div>
+                    <div class="project-footer">
+                        <div class="project-tags">
+                            <span class="tag">WordPress</span>
+                            <span class="tag">Branding</span>
+                            <span class="tag">UI/UX</span>
+                        </div>
+                        <span class="project-arrow">↗</span>
+                    </div>
+                </a>
+
+                <div class="project-card" style="cursor:default;">
+                    <div class="project-num">04 · Internal Tool</div>
+                    <div class="project-name">HWL CRM</div>
+                    <div class="project-type">Sales & Inventory System</div>
+                    <div class="project-desc">Custom CRM solution for Herbs World Limited — managing sales pipeline,
+                        inventory tracking, and internal operations. Built to streamline the company's day-to-day
+                        workflows.</div>
+                    <div class="project-footer">
+                        <div class="project-tags">
+                            <span class="tag">CRM</span>
+                            <span class="tag">Inventory</span>
+                            <span class="tag">Custom Dev</span>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="https://github.com/omnitx/NeonIndex" target="_blank" rel="noopener" class="project-card">
+                    <div class="project-num">05 · Open Source · AI-delivered</div>
+                    <div class="project-name">NeonIndex</div>
+                    <div class="project-type">PHP Directory Lister</div>
+                    <div class="project-desc">A modern PHP directory lister with a neon-themed UI, admin panel, and file
+                        management. Delivered as an AI-assisted project — one of several real-world AI solutions built
+                        and shipped.</div>
+                    <div class="project-footer">
+                        <div class="project-tags">
+                            <span class="tag">PHP</span>
+                            <span class="tag">UI Design</span>
+                            <span class="tag">AI-assisted</span>
+                        </div>
+                        <span class="project-arrow">↗</span>
+                    </div>
+                </a>
+
+                <div class="project-card" style="cursor:default;">
+                    <div class="project-num">06 · Content · 500+ Videos</div>
+                    <div class="project-name">immekun & imranah</div>
+                    <div class="project-type">Video Production & Channels</div>
+                    <div class="project-desc">Managing and producing content for two channels since 2019 — over 500
+                        videos covering short-form content, After Effects motion work, and creative productions.</div>
+                    <div class="project-footer">
+                        <div class="project-tags">
+                            <span class="tag">After Effects</span>
+                            <span class="tag">Premiere Pro</span>
+                            <span class="tag">Content</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- EXPERIENCE -->
+        <section class="section reveal r4" id="experience">
+            <div class="section-header">
+                <h2 class="section-title">EXPERIENCE</h2>
+                <span class="section-tag">Work & Education</span>
+            </div>
+            <div class="exp-list">
+                <div class="exp-item">
+                    <div class="exp-meta">
+                        <span class="exp-date">Jan 2019 — Present</span>
+                        <span class="exp-org">Herbs World Limited</span>
+                    </div>
+                    <div>
+                        <div class="exp-role">IT Manager</div>
+                        <div class="exp-desc">Managing IT infrastructure, network security, and WordPress development.
+                            Overseeing UI/UX design implementation, SEO strategies, and digital operations. Leading a
+                            team to maintain and improve the company's technical infrastructure.</div>
+                        <div class="skill-tags" style="margin-top:16px;">
+                            <span class="tag">WordPress</span>
+                            <span class="tag">Network Security</span>
+                            <span class="tag">UI/UX</span>
+                            <span class="tag">SEO</span>
+                            <span class="tag">IT Infrastructure</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="exp-item">
+                    <div class="exp-meta">
+                        <span class="exp-date">Jan 2020 — Present</span>
+                        <span class="exp-org">Self-employed</span>
+                    </div>
+                    <div>
+                        <div class="exp-role">Freelance Designer</div>
+                        <div class="exp-desc">Providing 3D modeling, rendering, and comprehensive UI/UX design services
+                            for various clients. Specializing in brand identity, video production, and digital content
+                            for businesses and individuals.</div>
+                        <div class="skill-tags" style="margin-top:16px;">
+                            <span class="tag">Cinema 4D</span>
+                            <span class="tag">UI/UX</span>
+                            <span class="tag">Branding</span>
+                            <span class="tag">Video Production</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="exp-item">
+                    <div class="exp-meta">
+                        <span class="exp-date">College Years</span>
+                        <span class="exp-org">Bangladesh Air Force College Kurmitola</span>
+                    </div>
+                    <div>
+                        <div class="exp-role">General Secretary</div>
+                        <div class="exp-desc">General Secretary of the Cultural Club at Bangladesh Air Force College
+                            Kurmitola (BAFSK). Led IT operations, managed club photography, organized cultural events,
+                            and coordinated a team of members across all club activities.</div>
+                        <div class="skill-tags" style="margin-top:16px;">
+                            <span class="tag">Leadership</span>
+                            <span class="tag">IT Management</span>
+                            <span class="tag">Photography</span>
+                            <span class="tag">Event Management</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="exp-item">
+                    <div class="exp-meta">
+                        <span class="exp-date">Currently Pursuing</span>
+                        <span class="exp-org">Govt. Bangla College · Dhaka University</span>
+                    </div>
+                    <div>
+                        <div class="exp-role">Bachelor's Degree</div>
+                        <div class="exp-desc">Studying at Government Bangla College, Mirpur, Dhaka — one of the seven
+                            colleges affiliated with the University of Dhaka (transitioning to Dhaka Central
+                            University). Previously completed college at Bangladesh Air Force College Kurmitola (BAFSK).
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GITHUB -->
+        <section class="section reveal r4" id="github">
+            <div class="section-header">
+                <h2 class="section-title">OPEN SOURCE</h2>
+                <span class="section-tag">github.com/omnitx</span>
+            </div>
+            <div class="github-stats">
+                <div class="gh-stat">
+                    <div class="gh-num" id="gh-repos">—</div>
+                    <div class="gh-label">Repositories</div>
+                </div>
+                <div class="gh-stat">
+                    <div class="gh-num" id="gh-followers">—</div>
+                    <div class="gh-label">Followers</div>
+                </div>
+                <div class="gh-stat">
+                    <div class="gh-num" id="gh-stars">—</div>
+                    <div class="gh-label">Stars Earned</div>
+                </div>
+                <div class="gh-stat">
+                    <div class="gh-num" id="gh-forks">—</div>
+                    <div class="gh-label">Forks</div>
+                </div>
+            </div>
+            <a href="https://github.com/omnitx" target="_blank" rel="noopener" class="btn btn-outline"
+                style="display:inline-flex;">View GitHub Profile →</a>
+        </section>
+
+        <!-- CONTACT -->
+        <section class="section reveal r5" id="contact">
+            <div class="section-header">
+                <h2 class="section-title">CONTACT</h2>
+                <span class="section-tag">Get in touch</span>
+            </div>
+            <div class="contact-grid">
+                <a href="/cdn-cgi/l/email-protection#2940445b4847464447405d51694d5c4a42074a4644" class="contact-card">
+                    <span class="contact-label">Email</span>
+                    <span class="contact-value"><span class="__cf_email__"
+                            data-cfemail="84ede9f6e5eaebe9eaedf0fcc4e0f1e7efaae7ebe9">[email&#160;protected]</span></span>
+                </a>
+                <a href="https://wa.me/8801840538790" target="_blank" class="contact-card">
+                    <span class="contact-label">WhatsApp</span>
+                    <span class="contact-value">+880 1840-538790</span>
+                </a>
+                <a href="https://github.com/omnitx" target="_blank" class="contact-card">
+                    <span class="contact-label">GitHub</span>
+                    <span class="contact-value">github.com/omnitx</span>
+                </a>
+                <a href="https://omnitx.github.io" target="_blank" class="contact-card">
+                    <span class="contact-label">Portfolio</span>
+                    <span class="contact-value">omnitx.github.io</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer reveal r6">
+            <span class="footer-text">© <span id="yr"></span> Imran Ahmed — Designed & Built by Imran Ahmed</span>
+            <span class="footer-text">Dhaka, Bangladesh</span>
+        </footer>
+
+    </div>
+
+    <script>
+        // Theme
+        (function () {
+            const stored = localStorage.getItem('portfolio-theme');
+            const isDark = stored === null ? true : stored === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            const sun = document.getElementById('icon-sun');
+            const moon = document.getElementById('icon-moon');
+            function applyIcons(dark) {
+                sun.style.display = dark ? 'none' : 'block';
+                moon.style.display = dark ? 'block' : 'none';
+            }
+            applyIcons(isDark);
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('portfolio-theme', next);
+                applyIcons(next === 'dark');
+            });
+        })();
+
+        // GitHub Stats
+        async function loadGitHub() {
+            try {
+                const res = await fetch('https://api.github.com/users/omnitx');
+                const user = await res.json();
+                document.getElementById('gh-repos').textContent = user.public_repos || '—';
+                document.getElementById('gh-followers').textContent = user.followers || '—';
+
+                // Get stars + forks from repos
+                const reposRes = await fetch('https://api.github.com/users/omnitx/repos?per_page=100');
+                const repos = await reposRes.json();
+                if (Array.isArray(repos)) {
+                    const stars = repos.reduce((a, r) => a + r.stargazers_count, 0);
+                    const forks = repos.reduce((a, r) => a + r.forks_count, 0);
+                    document.getElementById('gh-stars').textContent = stars;
+                    document.getElementById('gh-forks').textContent = forks;
+                }
+            } catch (e) {
+                console.log('GitHub API error:', e);
+            }
+        }
+
+        loadGitHub();
+        document.getElementById('yr').textContent = new Date().getFullYear();
+
+        // Custom cursor
+        (function () {
+            const hasMouse = window.matchMedia('(pointer: fine)').matches;
+            const isWide = window.matchMedia('(min-width: 768px)').matches;
+            if (!hasMouse || !isWide) return;
+            document.body.classList.add('custom-cursor');
+            const dot = document.getElementById('cursorDot');
+            const ring = document.getElementById('cursorRing');
+            let mx = -100, my = -100, rx = -100, ry = -100;
+            document.addEventListener('mousemove', e => {
+                mx = e.clientX; my = e.clientY;
+                dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+                dot.classList.add('active'); ring.classList.add('active');
+            });
+            document.addEventListener('mouseleave', () => {
+                dot.classList.remove('active'); ring.classList.remove('active');
+            });
+            function animate() {
+                rx += (mx - rx) * 0.1; ry += (my - ry) * 0.1;
+                ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+                requestAnimationFrame(animate);
+            }
+            animate();
+            document.addEventListener('mouseover', e => {
+                if (e.target.closest('a, button')) { ring.classList.add('hovering'); }
+            });
+            document.addEventListener('mouseout', e => {
+                if (e.target.closest('a, button')) { ring.classList.remove('hovering'); }
+            });
+        })();
+    </script>
 </body>
 
 </html>
