@@ -34,7 +34,7 @@ set "APP_5=PotPlayer|https://t1.daumcdn.net/potplayer/PotPlayer/Version/Latest/P
 set "APP_6=qBittorrent|https://github.com/qbittorrent/qBittorrent/releases/download/release-5.0.4/qbittorrent_5.0.4_x64_setup.exe|/S|standard"
 set "APP_7=LocalSend|https://github.com/localsend/localsend/releases/download/v1.16.2/LocalSend-1.16.2-windows-x86-64.exe|/S /VERYSILENT|standard"
 set "APP_8=Cloudflare WARP|https://1111-releases.cloudflareclient.com/windows/Cloudflare_WARP_Release-x64.msi|/quiet /norestart|standard"
-set "APP_9=TightVNC|https://github.com/Tight-VNC/tightvnc/releases/download/v2.8.85/tightvnc-2.8.85-gpl-setup-64bit.msi|/quiet /norestart ADDLOCAL=Server SERVER_REGISTER_AS_SERVICE=1 SERVER_ADD_FIREWALL_EXCEPTION=1|vnc"
+set "APP_9=TightVNC|https://github.com/Tight-VNC/tightvnc/releases/download/v2.8.85/tightvnc-2.8.85-gpl-setup-64bit.msi|/quiet /norestart ADDLOCAL=Server SERVER_REGISTER_AS_SERVICE=1 SERVER_ADD_FIREWALL_EXCEPTION=1 SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=0 SET_REMOVEWALLPAPER=1 VALUE_OF_REMOVEWALLPAPER=0|standard"
 set "APP_10=ZeroTier|https://download.zerotier.com/RELEASES/1.14.2/dist/ZeroTier%%20One.msi|/quiet /norestart|zerotier"
 set "TOTAL_APPS=10"
 :: ============================================================
@@ -301,42 +301,6 @@ set "I_URL=%~2"
 set "I_FLAGS=%~3"
 set "I_TYPE=%~4"
 
-:: --- VNC: Show config prompt ---
-if /i "!I_TYPE!"=="vnc" (
-    echo   ============================================================
-    echo             TightVNC Configuration
-    echo   ============================================================
-    echo    [1] No Password (home network)
-    echo    [2] Set Password (max 8 chars)
-    echo    [S] Skip
-    echo   ============================================================
-    echo.
-    set /p "VNC_MODE=Choose (1/2/S): "
-
-    if /i "!VNC_MODE!"=="S" (
-        echo   Skipped.
-        endlocal
-        set /a SKIP_COUNT+=1
-        goto :eof
-    )
-
-    set "VNC_AUTH_FLAGS="
-    if "!VNC_MODE!"=="2" (
-        echo   Note: TightVNC limits passwords to 8 characters.
-        set /p "VNC_PASS=Password: "
-        if "!VNC_PASS!"=="" (
-            echo   Empty - using No Auth mode.
-            set "VNC_AUTH_FLAGS=SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=0"
-        ) else (
-            set "VNC_AUTH_FLAGS=SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=!VNC_PASS!"
-        )
-    ) else (
-        set "VNC_AUTH_FLAGS=SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=0"
-    )
-    set "I_FLAGS=!I_FLAGS! !VNC_AUTH_FLAGS!"
-    set "I_TYPE=msi"
-)
-
 :: --- Download ---
 set "TEMP_DIR=%TEMP%\OMNITX_!I_NAME!"
 if exist "!TEMP_DIR!" rd /s /q "!TEMP_DIR!" >nul 2>&1
@@ -456,7 +420,7 @@ goto :eof
 :: Banner
 :: ============================================================
 :Banner
-echo  @@@@@   @@@   @@@  @@@   @@  @@  @@@@@@@  @@   @@
+echo    @@@@@   @@@   @@@  @@@   @@  @@  @@@@@@@  @@   @@
 echo   @@   @@  @@@@ @@@@  @@@@  @@  @@    @@      @@ @@
 echo   @@   @@  @@ @@@ @@  @@ @@ @@  @@    @@       @@@
 echo   @@   @@  @@     @@  @@  @@@@  @@    @@      @@ @@
