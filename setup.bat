@@ -54,17 +54,12 @@ if /i "%~1"=="app" (
     )
 )
 
-:: --- Admin Check ---
+:: --- Admin Check & Auto-Elevation ---
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-    echo.
-    echo  =============================================
-    echo   Administrator permissions required.
-    echo   Right-click this script - "Run as administrator"
-    echo  =============================================
-    echo.
-    pause
-    exit /b 1
+    echo  Requesting Administrator privileges...
+    powershell -Command "Start-Process cmd -ArgumentList '/c \"%~f0\"' -Verb RunAs" >nul 2>&1
+    exit /b
 )
 
 :: --- Log File ---
