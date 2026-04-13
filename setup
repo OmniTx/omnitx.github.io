@@ -754,7 +754,26 @@ function Install-TightVNC {
                 throw "MSI installation failed with exit code $($process.ExitCode)"
             }
             
-            Write-Log "TightVNC installed successfully" -Level OK
+            Write-Log "TightVNC installed successfully. Applying registry overrides..." -Level OK
+            
+            # FORCE REGISTRY OVERRIDES: MSI parameters can sometimes fail or be ignored.
+            $regPath = "HKLM:\SOFTWARE\TightVNC\Server"
+            if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
+            
+            if ($vncMode -eq "NoAuth") {
+                Set-ItemProperty -Path $regPath -Name "UseVncAuthentication" -Value 0 -Type DWord -Force
+                Write-Log "Forced Registry: VNC Authentication = 0 (No Auth)" -Level INFO
+            }
+            
+            Set-ItemProperty -Path $regPath -Name "RemoveWallpaper" -Value 0 -Type DWord -Force
+            Write-Log "Forced Registry: RemoveWallpaper = 0 (Keeps Background)" -Level INFO
+            
+            Set-ItemProperty -Path $regPath -Name "RdpSession" -Value 1 -Type DWord -Force
+            Write-Log "Forced Registry: RdpSession = 1 (Allows RDP Connection)" -Level INFO
+
+            # Restart service so registry changes take immediate effect
+            Stop-Service -Name "tvnserver" -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
             
             # Verify service is running
             $service = Get-Service -Name "tvnserver" -ErrorAction SilentlyContinue
