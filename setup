@@ -760,6 +760,12 @@ function Install-TightVNC {
             $regPath = "HKLM:\SOFTWARE\TightVNC\Server"
             if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
             
+            # Clear HKCU overrides so HKLM settings apply globally
+            if (Test-Path "HKCU:\Software\TightVNC\Server") {
+                Remove-Item -Path "HKCU:\Software\TightVNC" -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Log "Cleared HKCU TightVNC overrides." -Level INFO
+            }
+            
             if ($vncMode -eq "NoAuth") {
                 Set-ItemProperty -Path $regPath -Name "UseVncAuthentication" -Value 0 -Type DWord -Force
                 Write-Log "Forced Registry: VNC Authentication = 0 (No Auth)" -Level INFO
@@ -768,26 +774,24 @@ function Install-TightVNC {
             Set-ItemProperty -Path $regPath -Name "RemoveWallpaper" -Value 0 -Type DWord -Force
             Write-Log "Forced Registry: RemoveWallpaper = 0 (Keeps Background)" -Level INFO
             
-            Set-ItemProperty -Path $regPath -Name "RdpSession" -Value 1 -Type DWord -Force
-            Write-Log "Forced Registry: RdpSession = 1 (Allows RDP Connection)" -Level INFO
+            # Use 'ConnectToRdp' which is the correct property name for TightVNC 2.8+
+            Set-ItemProperty -Path $regPath -Name "ConnectToRdp" -Value 1 -Type DWord -Force
+            Write-Log "Forced Registry: ConnectToRdp = 1 (Allows RDP Connection)" -Level INFO
 
-            # Restart service so registry changes take immediate effect
-            Stop-Service -Name "tvnserver" -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2
+            # Apply settings by reloading and restarting service
+            $tvnserver = "C:\Program Files\TightVNC\tvnserver.exe"
+            if (Test-Path $tvnserver) {
+                Start-Process -FilePath $tvnserver -ArgumentList "-controlservice -reload" -Wait -WindowStyle Hidden
+            }
+            Restart-Service -Name "tvnserver" -Force -ErrorAction SilentlyContinue
             
             # Verify service is running
             $service = Get-Service -Name "tvnserver" -ErrorAction SilentlyContinue
-            if ($service) {
-                if ($service.Status -ne 'Running') {
-                    Start-Service -Name "tvnserver" -ErrorAction SilentlyContinue
-                    Write-Log "TightVNC service started" -Level OK
-                }
-                else {
-                    Write-Log "TightVNC service already running" -Level OK
-                }
+            if ($service -and $service.Status -eq 'Running') {
+                Write-Log "TightVNC service is running with new settings" -Level OK
             }
             else {
-                Write-Log "TightVNC service not found - may need manual start" -Level WARN
+                Write-Log "TightVNC service not running - may need manual start" -Level WARN
             }
         }
         finally {
