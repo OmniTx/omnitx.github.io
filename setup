@@ -706,14 +706,14 @@ function Install-TightVNC {
                 "ADDLOCAL=Server"
                 "SERVER_REGISTER_AS_SERVICE=1"
                 "SERVER_ADD_FIREWALL_EXCEPTION=1"
-                # Authentication settings MUST come before password settings
+                # Authentication settings: 1 to enable configuration, then set value
                 "SET_USEVNCAUTHENTICATION=1"
             )
 
             if ($vncMode -eq "NoAuth") {
-                # For NoAuth: Disable VNC authentication entirely (0 = do not require auth)
+                # For NoAuth: Disable VNC authentication (0 = do not require auth)
                 $msiArgs += "VALUE_OF_USEVNCAUTHENTICATION=0"
-                # Do NOT set any password properties when in NoAuth mode!
+                Write-Log "Configuring TightVNC for NO AUTHENTICATION mode." -Level INFO
             }
             else {
                 # For Password mode: Enable VNC authentication and set passwords
@@ -722,15 +722,17 @@ function Install-TightVNC {
                 $msiArgs += "VALUE_OF_PASSWORD=$vncPassword"
                 $msiArgs += "SET_VIEWONLYPASSWORD=1"
                 $msiArgs += "VALUE_OF_VIEWONLYPASSWORD=$vncPassword"
+                Write-Log "Configuring TightVNC with password protection." -Level INFO
             }
 
-            # Control interface settings (no admin password needed)
+            # Control interface and visual settings
             $msiArgs += @(
                 "SET_USECONTROLAUTHENTICATION=1"
                 "VALUE_OF_USECONTROLAUTHENTICATION=0"
                 # Other server settings
                 "SET_ACCEPTHTTPCONNECTIONS=1"
                 "VALUE_OF_ACCEPTHTTPCONNECTIONS=0"
+                # KEEP DESKTOP BACKGROUND: SET_REMOVEWALLPAPER=1 enables the setting, VALUE=0 keeps it
                 "SET_REMOVEWALLPAPER=1"
                 "VALUE_OF_REMOVEWALLPAPER=0"
                 "SET_ENABLEFILETRANSFERS=1"
