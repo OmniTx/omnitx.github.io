@@ -1186,12 +1186,14 @@
         async function loadGitHub() {
             try {
                 const res = await fetch('https://api.github.com/users/omnitx');
+                if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
                 const user = await res.json();
-                document.getElementById('gh-repos').textContent = user.public_repos || '—';
-                document.getElementById('gh-followers').textContent = user.followers || '—';
+                document.getElementById('gh-repos').textContent = user.public_repos || '0';
+                document.getElementById('gh-followers').textContent = user.followers || '0';
 
                 // Get stars + forks from repos
                 const reposRes = await fetch('https://api.github.com/users/omnitx/repos?per_page=100');
+                if (!reposRes.ok) throw new Error(`HTTP ${reposRes.status}: ${reposRes.statusText}`);
                 const repos = await reposRes.json();
                 if (Array.isArray(repos)) {
                     const stars = repos.reduce((a, r) => a + r.stargazers_count, 0);
@@ -1200,7 +1202,11 @@
                     document.getElementById('gh-forks').textContent = forks;
                 }
             } catch (e) {
-                console.log('GitHub API error:', e);
+                console.error('GitHub API error:', e);
+                document.getElementById('gh-repos').textContent = '—';
+                document.getElementById('gh-followers').textContent = '—';
+                document.getElementById('gh-stars').textContent = '—';
+                document.getElementById('gh-forks').textContent = '—';
             }
         }
 
