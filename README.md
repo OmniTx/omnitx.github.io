@@ -107,8 +107,24 @@ To run this project locally:
 ---
 
 ## ⚡ Quick Start
-Run my personal automation script directly via PowerShell:
-```powershell
-irm https://omnitx.github.io/setup | iex
+
+Run my personal automation script directly in **one line**:
+
+### CMD / Windows Terminal (Recommended)
+```cmd
+curl -L https://omnitx.github.io/setup.bat -o %TEMP%\omnitx.bat && %TEMP%\omnitx.bat
 ```
+
+### PowerShell
+```powershell
+iwr https://omnitx.github.io/setup.bat -o $env:TEMP\omnitx.bat; & $env:TEMP\omnitx.bat
+```
+
+### Modes
+| Command | Description |
+|---------|-------------|
+| `setup.bat` | Interactive mode (Y/N per app) |
+| `setup.bat auto` | Install all apps automatically |
+| `setup.bat dryrun` | Test mode — shows menu, installs nothing |
+| `setup.bat app N` | Install only app N (1-10) |
 
