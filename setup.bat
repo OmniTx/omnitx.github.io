@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 :: ============================================================
-:: OMNITX Setup Script v4.0.0
+:: OMNITX Setup Script v4.0.1
 :: Pure CMD - Direct Downloads - No Package Manager
 :: ============================================================
 :: One-liner CMD:  curl -L https://omnitx.github.io/setup.bat -o %TEMP%\omnitx.bat && %TEMP%\omnitx.bat
@@ -10,9 +10,9 @@ setlocal enabledelayedexpansion
 :: ============================================================
 
 :: ============================================================
-:: CONFIGURATION (Edit these values to customize)
+:: CONFIGURATION
 :: ============================================================
-set "SCRIPT_VERSION=4.0.0"
+set "SCRIPT_VERSION=4.0.1"
 set "LOG_FILE_NAME=OMNITX_Setup_Log.txt"
 set "LOG_TO_DESKTOP=yes"
 
@@ -108,73 +108,169 @@ set "SKIP_COUNT=0"
 set "ABORTED=0"
 
 if %SINGLE_APP%==1 (
-    set "LOOP_START=%SINGLE_APP_NUM%"
-    set "LOOP_END=%SINGLE_APP_NUM%"
+    call :RunApp %SINGLE_APP_NUM%
 ) else (
-    set "LOOP_START=1"
-    set "LOOP_END=%TOTAL_APPS%"
+    call :RunApp 1
 )
 
-for /l %%N in (%LOOP_START%,1,%LOOP_END%) do (
-    if !ABORTED!==1 goto InstallReport
+goto InstallReport
 
-    call :GetApp %%N
-    if "!APP_NAME!"=="" goto InstallReport
+:: ============================================================
+:: Recursive App Runner
+:: ============================================================
+:RunApp
+set "CUR_APP=%~1"
+if %CUR_APP% gtr %TOTAL_APPS% goto :eof
+if %ABORTED%==1 goto :eof
 
-    echo   --------------------------------------------------------
-    echo    [%%N/%TOTAL_APPS%] !APP_NAME!
-    echo    Type: !APP_TYPE!
-    echo   --------------------------------------------------------
+call :GetApp %CUR_APP%
+if "!APP_NAME!"=="" goto :eof
 
-    if %DRYRUN%==1 (
-        echo   [DRYRUN] Would download and install: !APP_NAME!
-        call :Log INFO "DRYRUN: !APP_NAME!"
-        set /a SUCCESS_COUNT+=1
-        goto :NextApp
-    )
+echo   --------------------------------------------------------
+echo    [%CUR_APP%/%TOTAL_APPS%] !APP_NAME!
+echo    Type: !APP_TYPE!
+echo   --------------------------------------------------------
 
-    if %AUTO%==1 (
-        call :InstallApp !APP_NAME! !APP_URL! !APP_FLAGS! !APP_TYPE!
-        goto :NextApp
-    )
-
-    echo   Install? [Y/N/ESC]:
-    choice /c YNES /n /m "  > "
-    if !errorlevel!==1 (
-        call :InstallApp !APP_NAME! !APP_URL! !APP_FLAGS! !APP_TYPE!
-    ) else if !errorlevel!==2 (
-        echo   Skipped.
-        call :Log INFO "Skipped: !APP_NAME!"
-        set /a SKIP_COUNT+=1
-    ) else if !errorlevel!==3 (
-        echo   Aborting remaining apps.
-        call :Log WARN "User aborted at app %%N"
-        set "ABORTED=1"
-    ) else (
-        echo   Skipped.
-        set /a SKIP_COUNT+=1
-    )
-
-    :NextApp
-    echo.
+if %DRYRUN%==1 (
+    echo   [DRYRUN] Would download and install: !APP_NAME!
+    call :Log INFO "DRYRUN: !APP_NAME!"
+    set /a SUCCESS_COUNT+=1
+    goto :NextAppInLoop
 )
 
-:InstallReport
-cls
-call :Banner
+if %AUTO%==1 (
+    call :DoInstall "!APP_NAME!" "!APP_URL!" "!APP_FLAGS!" "!APP_TYPE!"
+    goto :NextAppInLoop
+)
 
-echo   ============================================================
-echo                    INSTALLATION REPORT
-echo   ============================================================
-echo    Succeeded : %SUCCESS_COUNT%
-echo    Skipped   : %SKIP_COUNT%
-echo    Failed    : %FAIL_COUNT%
-echo    Log File  : %LOG_FILE%
-if %DRYRUN%==1 echo    Mode      : DRY RUN (no changes made)
-echo   ============================================================
+echo   Install? [Y/N/ESC]:
+choice /c YNES /n /m "  > "
+if !errorlevel!==1 (
+    call :DoInstall "!APP_NAME!" "!APP_URL!" "!APP_FLAGS!" "!APP_TYPE!"
+) else if !errorlevel!==2 (
+    echo   Skipped.
+    call :Log INFO "Skipped: !APP_NAME!"
+    set /a SKIP_COUNT+=1
+) else if !errorlevel!==3 (
+    echo   Aborting remaining apps.
+    call :Log WARN "User aborted at app %CUR_APP%"
+    set "ABORTED=1"
+) else (
+    echo   Skipped.
+    set /a SKIP_COUNT+=1
+)
+
+:NextAppInLoop
 echo.
-pause
-goto MainEntry
+set /a NEXT_APP=%CUR_APP% + 1
+call :RunApp %NEXT_APP%
+goto :eof
+
+:: ============================================================
+:: Core: Install a Single App
+:: ============================================================
+:DoInstall
+setlocal enabledelayedexpansion
+
+set "I_NAME=%~1"
+set "I_URL=%~2"
+set "I_FLAGS=%~3"
+set "I_TYPE=%~4"
+
+:: --- Download ---
+set "TEMP_DIR=%TEMP%\OMNITX_!I_NAME!"
+if exist "!TEMP_DIR!" rd /s /q "!TEMP_DIR!" >nul 2>&1
+mkdir "!TEMP_DIR!" >nul 2>&1
+
+:: Extract filename from URL
+set "FILE_NAME=!I_URL!"
+set "FILE_NAME=!FILE_NAME:*//=!"
+for %%F in ("!FILE_NAME!") do set "FILE_NAME=%%~nxF"
+set "FILE_PATH=!TEMP_DIR!\!FILE_NAME!"
+
+echo   Downloading !I_NAME!...
+echo   URL: !I_URL!
+
+:: Download: certutil (all Windows) then curl fallback
+certutil -urlcache -split -f "!I_URL!" "!FILE_PATH!" >nul 2>&1
+if !errorlevel! neq 0 (
+    echo   certutil failed, trying curl...
+    curl -L -o "!FILE_PATH!" "!I_URL!" 2>nul
+)
+
+if not exist "!FILE_PATH!" (
+    echo   ERROR: Download failed.
+    call :Log ERROR "Download failed: !I_NAME!"
+    endlocal
+    set /a FAIL_COUNT+=1
+    goto :eof
+)
+
+for %%Z in ("!FILE_PATH!") do set "F_SIZE=%%~zZ"
+if !F_SIZE! lss 1000000 (
+    echo   ERROR: File too small (!F_SIZE! bytes). Download likely failed.
+    call :Log ERROR "Download too small: !I_NAME! (!F_SIZE! bytes)"
+    endlocal
+    set /a FAIL_COUNT+=1
+    goto :eof
+)
+
+echo   Downloaded: !F_SIZE! bytes.
+
+:: --- Install ---
+echo   Installing !I_NAME!...
+call :Log INFO "Installing: !I_NAME!"
+
+if /i "!FILE_PATH:~-4!"==".msi" (
+    start /wait "" msiexec /i "!FILE_PATH!" !I_FLAGS! /qn /norestart
+) else (
+    start /wait "" "!FILE_PATH!" !I_FLAGS!
+)
+
+if !errorlevel! equ 0 (
+    echo   OK: !I_NAME! installed.
+    call :Log OK "!I_NAME! installed."
+    endlocal
+    set /a SUCCESS_COUNT+=1
+) else (
+    echo   WARNING: Installer exited with code !errorlevel!
+    call :Log WARN "!I_NAME! exit code: !errorlevel!"
+    endlocal
+    set /a FAIL_COUNT+=1
+)
+
+:: --- ZeroTier: Auto-Join ---
+if /i "%~4"=="zerotier" (
+    echo   Waiting for ZeroTier service...
+    timeout /t 8 /nobreak >nul
+    if exist "C:\ProgramData\ZeroTier\One\zerotier-cli.bat" (
+        "C:\ProgramData\ZeroTier\One\zerotier-cli.bat" join %ZT_NETWORK% >nul 2>&1
+        echo   ZeroTier join requested for network %ZT_NETWORK%
+        call :Log OK "ZeroTier join requested: %ZT_NETWORK%"
+    ) else (
+        echo   WARNING: ZeroTier CLI not found. Manual join needed.
+        call :Log WARN "ZeroTier CLI not found."
+    )
+)
+
+:: --- Cleanup ---
+if exist "!TEMP_DIR!" rd /s /q "!TEMP_DIR!" >nul 2>&1
+
+endlocal
+goto :eof
+
+:: ============================================================
+:: Get App by Number
+:: ============================================================
+:GetApp
+set "GN=%~1"
+for /f "tokens=1,2,3,4 delims=|" %%A in ("!APP_%GN%!") do (
+    set "APP_NAME=%%A"
+    set "APP_URL=%%B"
+    set "APP_FLAGS=%%C"
+    set "APP_TYPE=%%D"
+)
+goto :eof
 
 :: ============================================================
 :: Menu: Fix & Repair
@@ -291,112 +387,6 @@ pause
 goto :eof
 
 :: ============================================================
-:: Core: Install a Single App
-:: ============================================================
-:InstallApp
-setlocal enabledelayedexpansion
-
-set "I_NAME=%~1"
-set "I_URL=%~2"
-set "I_FLAGS=%~3"
-set "I_TYPE=%~4"
-
-:: --- Download ---
-set "TEMP_DIR=%TEMP%\OMNITX_!I_NAME!"
-if exist "!TEMP_DIR!" rd /s /q "!TEMP_DIR!" >nul 2>&1
-mkdir "!TEMP_DIR!" >nul 2>&1
-
-:: Extract filename from URL
-set "FILE_NAME=!I_URL!"
-set "FILE_NAME=!FILE_NAME:*//=!"
-for %%F in ("!FILE_NAME!") do set "FILE_NAME=%%~nxF"
-set "FILE_PATH=!TEMP_DIR!\!FILE_NAME!"
-
-echo   Downloading !I_NAME!...
-echo   URL: !I_URL!
-
-:: Download: certutil (all Windows) then curl fallback
-certutil -urlcache -split -f "!I_URL!" "!FILE_PATH!" >nul 2>&1
-if !errorlevel! neq 0 (
-    echo   certutil failed, trying curl...
-    curl -L -o "!FILE_PATH!" "!I_URL!" 2>nul
-)
-
-if not exist "!FILE_PATH!" (
-    echo   ERROR: Download failed.
-    call :Log ERROR "Download failed: !I_NAME!"
-    endlocal
-    set /a FAIL_COUNT+=1
-    goto :eof
-)
-
-for %%Z in ("!FILE_PATH!") do set "F_SIZE=%%~zZ"
-if !F_SIZE! lss 1000000 (
-    echo   ERROR: File too small (!F_SIZE! bytes). Download likely failed.
-    call :Log ERROR "Download too small: !I_NAME! (!F_SIZE! bytes)"
-    endlocal
-    set /a FAIL_COUNT+=1
-    goto :eof
-)
-
-echo   Downloaded: !F_SIZE! bytes.
-
-:: --- Install ---
-echo   Installing !I_NAME!...
-call :Log INFO "Installing: !I_NAME!"
-
-if /i "!FILE_PATH:~-4!"==".msi" (
-    start /wait "" msiexec /i "!FILE_PATH!" !I_FLAGS! /qn /norestart
-) else (
-    start /wait "" "!FILE_PATH!" !I_FLAGS!
-)
-
-if !errorlevel! equ 0 (
-    echo   OK: !I_NAME! installed.
-    call :Log OK "!I_NAME! installed."
-    endlocal
-    set /a SUCCESS_COUNT+=1
-) else (
-    echo   WARNING: Installer exited with code !errorlevel!
-    call :Log WARN "!I_NAME! exit code: !errorlevel!"
-    endlocal
-    set /a FAIL_COUNT+=1
-)
-
-:: --- ZeroTier: Auto-Join ---
-if /i "%~4"=="zerotier" (
-    echo   Waiting for ZeroTier service...
-    timeout /t 8 /nobreak >nul
-    if exist "C:\ProgramData\ZeroTier\One\zerotier-cli.bat" (
-        "C:\ProgramData\ZeroTier\One\zerotier-cli.bat" join %ZT_NETWORK% >nul 2>&1
-        echo   ZeroTier join requested for network %ZT_NETWORK%
-        call :Log OK "ZeroTier join requested: %ZT_NETWORK%"
-    ) else (
-        echo   WARNING: ZeroTier CLI not found. Manual join needed.
-        call :Log WARN "ZeroTier CLI not found."
-    )
-)
-
-:: --- Cleanup ---
-if exist "!TEMP_DIR!" rd /s /q "!TEMP_DIR!" >nul 2>&1
-
-endlocal
-goto :eof
-
-:: ============================================================
-:: Get App by Number
-:: ============================================================
-:GetApp
-set "GN=%~1"
-for /f "tokens=1,2,3,4 delims=|" %%A in ("!APP_%GN%!") do (
-    set "APP_NAME=%%A"
-    set "APP_URL=%%B"
-    set "APP_FLAGS=%%C"
-    set "APP_TYPE=%%D"
-)
-goto :eof
-
-:: ============================================================
 :: Logging
 :: ============================================================
 :Log
@@ -420,7 +410,7 @@ goto :eof
 :: Banner
 :: ============================================================
 :Banner
-echo    @@@@@   @@@   @@@  @@@   @@  @@  @@@@@@@  @@   @@
+echo  @@@@@   @@@   @@@  @@@   @@  @@  @@@@@@@  @@   @@
 echo   @@   @@  @@@@ @@@@  @@@@  @@  @@    @@      @@ @@
 echo   @@   @@  @@ @@@ @@  @@ @@ @@  @@    @@       @@@
 echo   @@   @@  @@     @@  @@  @@@@  @@    @@      @@ @@
@@ -430,6 +420,26 @@ echo  OMNITX Setup v%SCRIPT_VERSION%
 echo  Pure CMD - Direct Downloads - No Package Manager
 echo.
 goto :eof
+
+:: ============================================================
+:: Install Report
+:: ============================================================
+:InstallReport
+cls
+call :Banner
+
+echo   ============================================================
+echo                    INSTALLATION REPORT
+echo   ============================================================
+echo    Succeeded : %SUCCESS_COUNT%
+echo    Skipped   : %SKIP_COUNT%
+echo    Failed    : %FAIL_COUNT%
+echo    Log File  : %LOG_FILE%
+if %DRYRUN%==1 echo    Mode      : DRY RUN (no changes made)
+echo   ============================================================
+echo.
+pause
+goto MainEntry
 
 :: ============================================================
 :: Exit
