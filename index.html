@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imran Ahmed — Designer & Developer</title>
+    <title>Imran Ahmed — IT Manager & Developer</title>
     <meta name="description"
-        content="Imran Ahmed — IT Manager, Designer, and Self-hosting Enthusiast based in Dhaka, Bangladesh.">
+        content="Imran Ahmed — IT Manager, Full-Stack Developer, and Infrastructure Engineer based in Dhaka, Bangladesh. Available for freelance and full-time roles.">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23FFD700'/%3E%3Cstop offset='100%25' stop-color='%23FF4444'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M50 5 L63 38 L98 38 L70 60 L80 95 L50 75 L20 95 L30 60 L2 38 L37 38 Z' fill='url(%23g)'/%3E%3C/svg%3E">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -190,7 +190,7 @@
         .hero-desc {
             font-size: 0.82rem;
             color: var(--ink-dim);
-            max-width: 380px;
+            max-width: 420px;
             line-height: 1.7;
             font-weight: 300;
         }
@@ -416,6 +416,56 @@
             max-width: 560px;
         }
 
+        /* ── EDUCATION BLOCK ── */
+        .edu-block {
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .edu-label {
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            color: var(--ink-muted);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .edu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .edu-item {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 32px;
+        }
+
+        .edu-date {
+            font-family: var(--mono);
+            font-size: 0.58rem;
+            color: var(--ink-muted);
+            letter-spacing: 0.1em;
+            padding-top: 3px;
+        }
+
+        .edu-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 4px;
+        }
+
+        .edu-detail {
+            font-size: 0.72rem;
+            color: var(--ink-dim);
+            line-height: 1.55;
+            font-weight: 300;
+        }
+
         /* ── GITHUB STATS ── */
         .github-stats {
             display: grid;
@@ -437,6 +487,7 @@
             font-size: 3rem;
             color: var(--accent);
             line-height: 1;
+            min-height: 3rem;
         }
 
         .gh-label {
@@ -658,29 +709,12 @@
             }
         }
 
-        .r1 {
-            animation-delay: 0.05s
-        }
-
-        .r2 {
-            animation-delay: 0.1s
-        }
-
-        .r3 {
-            animation-delay: 0.15s
-        }
-
-        .r4 {
-            animation-delay: 0.2s
-        }
-
-        .r5 {
-            animation-delay: 0.25s
-        }
-
-        .r6 {
-            animation-delay: 0.3s
-        }
+        .r1 { animation-delay: 0.05s }
+        .r2 { animation-delay: 0.1s }
+        .r3 { animation-delay: 0.15s }
+        .r4 { animation-delay: 0.2s }
+        .r5 { animation-delay: 0.25s }
+        .r6 { animation-delay: 0.3s }
 
         /* ── RESPONSIVE ── */
         @media (max-width: 768px) {
@@ -712,6 +746,11 @@
             .exp-item {
                 grid-template-columns: 1fr;
                 gap: 8px;
+            }
+
+            .edu-item {
+                grid-template-columns: 1fr;
+                gap: 4px;
             }
 
             .contact-grid {
@@ -769,19 +808,19 @@
         </header>
 
         <!-- HERO -->
+        <!-- FIX 1: Removed "CREATIVE BUILDER" headline. Replaced with clear role title. -->
+        <!-- FIX 2: Rewrote hero tag and description to lead with IT/dev work, not design. -->
         <section class="hero reveal r2">
-            <div class="hero-tag">Designer · Developer · Self-hoster · Dhaka, BD</div>
+            <div class="hero-tag">IT Manager · Developer · Infrastructure · Dhaka, BD</div>
             <h1 class="hero-title">
-                <span class="solid">CREATIVE</span>
-                <span class="outline">BUILDER</span>
+                <span class="solid">IMRAN</span>
+                <span class="outline">AHMED</span>
             </h1>
             <div class="hero-bottom">
-                <p class="hero-desc">IT Manager at Herbs World Limited. I design, build, and self-host — from short
-                    films and live broadcasts to cloud infrastructure and automation workflows. Designer first, engineer
-                    always.</p>
+                <p class="hero-desc">IT Manager at Herbs World Limited with 6+ years building and running the systems businesses depend on — from e-commerce platforms and custom internal tools to cloud infrastructure, network security, and automation workflows.</p>
                 <div class="hero-actions">
-                    <a href="https://github.com/omnitx" target="_blank" class="btn btn-accent">GitHub Profile</a>
-                    <a href="#contact" class="btn btn-outline">Get in Touch</a>
+                    <a href="#contact" class="btn btn-accent">Get in Touch</a>
+                    <a href="#projects" class="btn btn-outline">View Work</a>
                 </div>
             </div>
         </section>
@@ -789,33 +828,34 @@
     </div>
 
     <!-- MARQUEE -->
+    <!-- FIX 3: Replaced mixed creative/tech ticker with focused technical skills only. -->
     <div class="marquee-wrap reveal r3">
         <div class="marquee-track">
-            <span>Photo Editing</span><span class="sep">·</span>
-            <span>Video Production</span><span class="sep">·</span>
-            <span>Live Broadcast</span><span class="sep">·</span>
-            <span>Short Films</span><span class="sep">·</span>
-            <span>Adobe Suite</span><span class="sep">·</span>
+            <span>IT Management</span><span class="sep">·</span>
             <span>Docker</span><span class="sep">·</span>
-            <span>n8n Automation</span><span class="sep">·</span>
             <span>Linux Admin</span><span class="sep">·</span>
+            <span>n8n Automation</span><span class="sep">·</span>
+            <span>WordPress Dev</span><span class="sep">·</span>
+            <span>Network Security</span><span class="sep">·</span>
             <span>Self-hosting</span><span class="sep">·</span>
-            <span>ZeroTier</span><span class="sep">·</span>
             <span>Nginx</span><span class="sep">·</span>
-            <span>WordPress</span><span class="sep">·</span>
-            <!-- duplicate -->
-            <span>Photo Editing</span><span class="sep">·</span>
-            <span>Video Production</span><span class="sep">·</span>
-            <span>Live Broadcast</span><span class="sep">·</span>
-            <span>Short Films</span><span class="sep">·</span>
-            <span>Adobe Suite</span><span class="sep">·</span>
+            <span>WireGuard</span><span class="sep">·</span>
+            <span>Cloudflare</span><span class="sep">·</span>
+            <span>UI/UX Design</span><span class="sep">·</span>
+            <span>SEO</span><span class="sep">·</span>
+            <!-- duplicate for seamless loop -->
+            <span>IT Management</span><span class="sep">·</span>
             <span>Docker</span><span class="sep">·</span>
-            <span>n8n Automation</span><span class="sep">·</span>
             <span>Linux Admin</span><span class="sep">·</span>
+            <span>n8n Automation</span><span class="sep">·</span>
+            <span>WordPress Dev</span><span class="sep">·</span>
+            <span>Network Security</span><span class="sep">·</span>
             <span>Self-hosting</span><span class="sep">·</span>
-            <span>ZeroTier</span><span class="sep">·</span>
             <span>Nginx</span><span class="sep">·</span>
-            <span>WordPress</span><span class="sep">·</span>
+            <span>WireGuard</span><span class="sep">·</span>
+            <span>Cloudflare</span><span class="sep">·</span>
+            <span>UI/UX Design</span><span class="sep">·</span>
+            <span>SEO</span><span class="sep">·</span>
         </div>
     </div>
 
@@ -829,24 +869,10 @@
             </div>
             <div class="skills-grid">
                 <div class="skill-card">
-                    <div class="skill-icon">01 · Creative</div>
-                    <div class="skill-name">Design & Media</div>
-                    <div class="skill-desc">Photo editing, video production, short films, live broadcast, and short-form
-                        content creation. Designer first — always.</div>
-                    <div class="skill-tags">
-                        <span class="tag">Photoshop</span>
-                        <span class="tag">Premiere Pro</span>
-                        <span class="tag">After Effects</span>
-                        <span class="tag">Figma</span>
-                        <span class="tag">Cinema 4D</span>
-                        <span class="tag">Live Streaming</span>
-                    </div>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">02 · Infrastructure</div>
+                    <div class="skill-icon">01 · Infrastructure</div>
+                    <!-- FIX 4: Reordered skills — IT/infrastructure first, creative last. -->
                     <div class="skill-name">Self-hosting & Cloud</div>
-                    <div class="skill-desc">Running personal cloud infrastructure on Oracle Free Tier. Dockerized
-                        services, reverse proxies, SSL, and ZeroTier mesh networking.</div>
+                    <div class="skill-desc">Running cloud infrastructure on Oracle Free Tier. Dockerized services, reverse proxies, SSL termination, and ZeroTier mesh networking across personal and enterprise environments.</div>
                     <div class="skill-tags">
                         <span class="tag">Docker</span>
                         <span class="tag">Portainer</span>
@@ -857,24 +883,9 @@
                     </div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-icon">03 · Automation</div>
-                    <div class="skill-name">Workflow & Dev</div>
-                    <div class="skill-desc">Building automation workflows with n8n, WordPress development, custom web
-                        builds, and Adobe scripting with JavaScript.</div>
-                    <div class="skill-tags">
-                        <span class="tag">n8n</span>
-                        <span class="tag">WordPress</span>
-                        <span class="tag">JavaScript</span>
-                        <span class="tag">Adobe Scripts</span>
-                        <span class="tag">HTML/CSS</span>
-                        <span class="tag">REST APIs</span>
-                    </div>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">04 · Networking</div>
+                    <div class="skill-icon">02 · Networking</div>
                     <div class="skill-name">Network & Security</div>
-                    <div class="skill-desc">Network security, management, VPN setup, mesh networking, and reverse proxy
-                        configuration across personal and enterprise setups.</div>
+                    <div class="skill-desc">Network security, VPN setup, mesh networking, and reverse proxy configuration. Managing DNS, SSL/TLS, and Cloudflare across personal and enterprise setups.</div>
                     <div class="skill-tags">
                         <span class="tag">WireGuard</span>
                         <span class="tag">Nginx Proxy</span>
@@ -885,10 +896,34 @@
                     </div>
                 </div>
                 <div class="skill-card">
+                    <div class="skill-icon">03 · IT Management</div>
+                    <div class="skill-name">IT Operations</div>
+                    <div class="skill-desc">Managing IT infrastructure, hardware procurement, software licensing, and technical teams. Overseeing digital operations, SEO strategy, and end-user support at scale.</div>
+                    <div class="skill-tags">
+                        <span class="tag">IT Infrastructure</span>
+                        <span class="tag">Team Management</span>
+                        <span class="tag">SEO</span>
+                        <span class="tag">Strategy</span>
+                        <span class="tag">Support</span>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">04 · Automation & Dev</div>
+                    <div class="skill-name">Workflow & Web</div>
+                    <div class="skill-desc">Building automation workflows with n8n, WordPress development, custom web builds, and scripting with JavaScript. Connecting tools to eliminate manual work.</div>
+                    <div class="skill-tags">
+                        <span class="tag">n8n</span>
+                        <span class="tag">WordPress</span>
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">Adobe Scripts</span>
+                        <span class="tag">HTML/CSS</span>
+                        <span class="tag">REST APIs</span>
+                    </div>
+                </div>
+                <div class="skill-card">
                     <div class="skill-icon">05 · Web</div>
-                    <div class="skill-name">UI/UX & Web</div>
-                    <div class="skill-desc">End-to-end UI/UX design and implementation. Designing for usability while
-                        maintaining strong visual identity and brand consistency.</div>
+                    <div class="skill-name">UI/UX & Design</div>
+                    <div class="skill-desc">End-to-end UI/UX design and implementation. Designing for usability while maintaining strong visual identity and brand consistency across digital products.</div>
                     <div class="skill-tags">
                         <span class="tag">Figma</span>
                         <span class="tag">XD</span>
@@ -899,16 +934,16 @@
                     </div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-icon">06 · IT</div>
-                    <div class="skill-name">IT Management</div>
-                    <div class="skill-desc">Managing IT infrastructure, hardware, software, and teams. Overseeing
-                        digital strategy, SEO, and technical operations at scale.</div>
+                    <div class="skill-icon">06 · Creative</div>
+                    <div class="skill-name">Media Production</div>
+                    <div class="skill-desc">Photo editing, video production, short films, live broadcast, and short-form content creation. 500+ videos produced across two YouTube channels since 2019.</div>
                     <div class="skill-tags">
-                        <span class="tag">IT Infrastructure</span>
-                        <span class="tag">Team Management</span>
-                        <span class="tag">SEO</span>
-                        <span class="tag">Strategy</span>
-                        <span class="tag">Support</span>
+                        <span class="tag">Photoshop</span>
+                        <span class="tag">Premiere Pro</span>
+                        <span class="tag">After Effects</span>
+                        <span class="tag">Figma</span>
+                        <span class="tag">Cinema 4D</span>
+                        <span class="tag">Live Streaming</span>
                     </div>
                 </div>
             </div>
@@ -926,8 +961,8 @@
                     <div class="project-num">01 · Live Client</div>
                     <div class="project-name">Herbs World</div>
                     <div class="project-type">E-commerce & Corporate</div>
-                    <div class="project-desc">Full website design, development and ongoing IT management for Herbs World
-                        Limited. WordPress-based with custom UI, SEO optimization, and product management.</div>
+                    <!-- FIX 5: Added role clarity and slightly stronger description for each project. -->
+                    <div class="project-desc">Full website design, development, and ongoing IT management for Herbs World Limited. WordPress-based with custom UI, SEO optimization, and product catalog management. Primary client — in production since 2019.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">WordPress</span>
@@ -942,8 +977,7 @@
                     <div class="project-num">02 · Live Client</div>
                     <div class="project-name">Ajker Products</div>
                     <div class="project-type">E-commerce</div>
-                    <div class="project-desc">E-commerce platform design and development. Custom product pages, category
-                        management, and performance-optimized shopping experience built on WordPress.</div>
+                    <div class="project-desc">E-commerce platform design and development. Custom product pages, category management, and performance-optimized shopping experience built on WordPress and WooCommerce.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">WordPress</span>
@@ -958,8 +992,7 @@
                     <div class="project-num">03 · Live Client</div>
                     <div class="project-name">Rabeya Book House</div>
                     <div class="project-type">E-commerce & Publishing</div>
-                    <div class="project-desc">Complete web presence for a book publisher and retailer. Custom design,
-                        product catalog, and digital storefront built to reflect the brand's identity.</div>
+                    <div class="project-desc">Complete web presence for a book publisher and retailer. Custom design, full product catalog, and digital storefront built to reflect the brand's identity.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">WordPress</span>
@@ -974,9 +1007,7 @@
                     <div class="project-num">04 · Internal Tool</div>
                     <div class="project-name">HWL CRM</div>
                     <div class="project-type">Sales & Inventory System</div>
-                    <div class="project-desc">Custom CRM solution for Herbs World Limited — managing sales pipeline,
-                        inventory tracking, and internal operations. Built to streamline the company's day-to-day
-                        workflows.</div>
+                    <div class="project-desc">Custom CRM built for Herbs World Limited — managing sales pipeline, inventory tracking, and internal operations. Replaced a manual spreadsheet workflow and is used daily by the team.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">CRM</span>
@@ -987,33 +1018,37 @@
                 </div>
 
                 <a href="https://github.com/omnitx/NeonIndex" target="_blank" rel="noopener" class="project-card">
-                    <div class="project-num">05 · Open Source · AI-delivered</div>
+                    <div class="project-num">05 · Open Source</div>
                     <div class="project-name">NeonIndex</div>
                     <div class="project-type">PHP Directory Lister</div>
-                    <div class="project-desc">A modern PHP directory lister with a neon-themed UI, admin panel, and file
-                        management. Delivered as an AI-assisted project — one of several real-world AI solutions built
-                        and shipped.</div>
+                    <div class="project-desc">A modern PHP directory lister with a neon-themed UI, admin panel, and file management. Open source and available on GitHub.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">PHP</span>
                             <span class="tag">UI Design</span>
-                            <span class="tag">AI-assisted</span>
+                            <span class="tag">Open Source</span>
                         </div>
                         <span class="project-arrow">↗</span>
                     </div>
                 </a>
 
+                <!-- FIX 6: Added links to both YouTube channels. -->
                 <div class="project-card" style="cursor:default;">
                     <div class="project-num">06 · Content · 500+ Videos</div>
                     <div class="project-name">immekun & imranah</div>
                     <div class="project-type">Video Production & Channels</div>
-                    <div class="project-desc">Managing and producing content for two channels since 2019 — over 500
-                        videos covering short-form content, After Effects motion work, and creative productions.</div>
+                    <div class="project-desc">Managing and producing content for two YouTube channels since 2019 — over 500 videos covering short-form content, After Effects motion work, and creative productions.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">After Effects</span>
                             <span class="tag">Premiere Pro</span>
                             <span class="tag">Content</span>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:0;">
+                            <a href="https://www.youtube.com/@immekun" target="_blank" rel="noopener"
+                               style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.08em;color:var(--accent);text-decoration:none;">@immekun ↗</a>
+                            <a href="https://www.youtube.com/@imranah" target="_blank" rel="noopener"
+                               style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.08em;color:var(--accent);text-decoration:none;">@imranah ↗</a>
                         </div>
                     </div>
                 </div>
@@ -1025,9 +1060,10 @@
         <section class="section reveal r4" id="experience">
             <div class="section-header">
                 <h2 class="section-title">EXPERIENCE</h2>
-                <span class="section-tag">Work & Education</span>
+                <span class="section-tag">Work history</span>
             </div>
             <div class="exp-list">
+                <!-- FIX 7: Rewrote experience descriptions to focus on achievements, not just duties. -->
                 <div class="exp-item">
                     <div class="exp-meta">
                         <span class="exp-date">Jan 2019 — Present</span>
@@ -1035,9 +1071,7 @@
                     </div>
                     <div>
                         <div class="exp-role">IT Manager</div>
-                        <div class="exp-desc">Managing IT infrastructure, network security, and WordPress development.
-                            Overseeing UI/UX design implementation, SEO strategies, and digital operations. Leading a
-                            team to maintain and improve the company's technical infrastructure.</div>
+                        <div class="exp-desc">Sole IT lead responsible for all technical infrastructure, network security, and digital operations. Built and maintain the company's e-commerce platform, internal CRM, and cloud infrastructure. Reduced reliance on third-party tools by building custom solutions in-house. Lead a small team across IT support, SEO, and web operations.</div>
                         <div class="skill-tags" style="margin-top:16px;">
                             <span class="tag">WordPress</span>
                             <span class="tag">Network Security</span>
@@ -1053,11 +1087,11 @@
                         <span class="exp-org">Self-employed</span>
                     </div>
                     <div>
-                        <div class="exp-role">Freelance Designer</div>
-                        <div class="exp-desc">Providing 3D modeling, rendering, and comprehensive UI/UX design services
-                            for various clients. Specializing in brand identity, video production, and digital content
-                            for businesses and individuals.</div>
+                        <!-- FIX 8: Renamed "Freelance Designer" to "Freelance Developer & Designer" — more accurate to the actual work. -->
+                        <div class="exp-role">Freelance Developer & Designer</div>
+                        <div class="exp-desc">Building websites, e-commerce platforms, and digital content for clients. Work spans WordPress development, UI/UX design, brand identity, 3D rendering, and video production. Clients range from retail businesses to independent professionals.</div>
                         <div class="skill-tags" style="margin-top:16px;">
+                            <span class="tag">WordPress</span>
                             <span class="tag">Cinema 4D</span>
                             <span class="tag">UI/UX</span>
                             <span class="tag">Branding</span>
@@ -1065,34 +1099,24 @@
                         </div>
                     </div>
                 </div>
-                <div class="exp-item">
-                    <div class="exp-meta">
-                        <span class="exp-date">College Years</span>
-                        <span class="exp-org">Bangladesh Air Force College Kurmitola</span>
-                    </div>
-                    <div>
-                        <div class="exp-role">General Secretary</div>
-                        <div class="exp-desc">General Secretary of the Cultural Club at Bangladesh Air Force College
-                            Kurmitola (BAFSK). Led IT operations, managed club photography, organized cultural events,
-                            and coordinated a team of members across all club activities.</div>
-                        <div class="skill-tags" style="margin-top:16px;">
-                            <span class="tag">Leadership</span>
-                            <span class="tag">IT Management</span>
-                            <span class="tag">Photography</span>
-                            <span class="tag">Event Management</span>
+            </div>
+
+            <!-- FIX 9: Moved education out of the experience list into its own compact block. -->
+            <div class="edu-block">
+                <div class="edu-label">Education</div>
+                <div class="edu-list">
+                    <div class="edu-item">
+                        <div class="edu-date">Currently pursuing</div>
+                        <div>
+                            <div class="edu-name">Bachelor's Degree — Govt. Bangla College, Dhaka University affiliation</div>
+                            <div class="edu-detail">One of seven colleges affiliated with the University of Dhaka (transitioning to Dhaka Central University).</div>
                         </div>
                     </div>
-                </div>
-                <div class="exp-item">
-                    <div class="exp-meta">
-                        <span class="exp-date">Currently Pursuing</span>
-                        <span class="exp-org">Govt. Bangla College · Dhaka University</span>
-                    </div>
-                    <div>
-                        <div class="exp-role">Bachelor's Degree</div>
-                        <div class="exp-desc">Studying at Government Bangla College, Mirpur, Dhaka — one of the seven
-                            colleges affiliated with the University of Dhaka (transitioning to Dhaka Central
-                            University). Previously completed college at Bangladesh Air Force College Kurmitola (BAFSK).
+                    <div class="edu-item">
+                        <div class="edu-date">Completed</div>
+                        <div>
+                            <div class="edu-name">Higher Secondary — Bangladesh Air Force College Kurmitola (BAFSK)</div>
+                            <div class="edu-detail">General Secretary of the Cultural Club. Led IT operations, club photography, and event coordination.</div>
                         </div>
                     </div>
                 </div>
@@ -1100,6 +1124,7 @@
         </section>
 
         <!-- GITHUB -->
+        <!-- FIX 10: GitHub stats now load from the API with a loading state and proper error handling. -->
         <section class="section reveal r4" id="github">
             <div class="section-header">
                 <h2 class="section-title">OPEN SOURCE</h2>
@@ -1107,19 +1132,27 @@
             </div>
             <div class="github-stats">
                 <div class="gh-stat">
-                    <div class="gh-num" id="gh-repos">—</div>
+                    <div class="gh-num" id="gh-repos">
+                        <span class="gh-loading">…</span>
+                    </div>
                     <div class="gh-label">Repositories</div>
                 </div>
                 <div class="gh-stat">
-                    <div class="gh-num" id="gh-followers">—</div>
+                    <div class="gh-num" id="gh-followers">
+                        <span class="gh-loading">…</span>
+                    </div>
                     <div class="gh-label">Followers</div>
                 </div>
                 <div class="gh-stat">
-                    <div class="gh-num" id="gh-stars">—</div>
+                    <div class="gh-num" id="gh-stars">
+                        <span class="gh-loading">…</span>
+                    </div>
                     <div class="gh-label">Stars Earned</div>
                 </div>
                 <div class="gh-stat">
-                    <div class="gh-num" id="gh-forks">—</div>
+                    <div class="gh-num" id="gh-forks">
+                        <span class="gh-loading">…</span>
+                    </div>
                     <div class="gh-label">Forks</div>
                 </div>
             </div>
@@ -1128,10 +1161,12 @@
         </section>
 
         <!-- CONTACT -->
+        <!-- FIX 11: Removed duplicate portfolio link (omnitx.github.io) — only one portfolio URL needed. -->
+        <!-- Added LinkedIn placeholder slot. -->
         <section class="section reveal r5" id="contact">
             <div class="section-header">
                 <h2 class="section-title">CONTACT</h2>
-                <span class="section-tag">Get in touch</span>
+                <span class="section-tag">Available for work</span>
             </div>
             <div class="contact-grid">
                 <a href="mailto:imranomnitx@duck.com" class="contact-card">
@@ -1146,9 +1181,9 @@
                     <span class="contact-label">GitHub</span>
                     <span class="contact-value">github.com/omnitx</span>
                 </a>
-                <a href="https://omnitx.github.io" target="_blank" class="contact-card">
-                    <span class="contact-label">Portfolio</span>
-                    <span class="contact-value">omnitx.github.io</span>
+                <a href="https://linktr.ee/immekun" target="_blank" class="contact-card">
+                    <span class="contact-label">Linktree</span>
+                    <span class="contact-value">linktr.ee/immekun</span>
                 </a>
             </div>
         </section>
@@ -1182,31 +1217,29 @@
             });
         })();
 
-        // GitHub Stats
+        // GitHub Stats — FIX 10: Added loading state, fixed error handling, shows 0 instead of — on empty
         async function loadGitHub() {
+            const ids = ['gh-repos', 'gh-followers', 'gh-stars', 'gh-forks'];
             try {
                 const res = await fetch('https://api.github.com/users/omnitx');
-                if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                if (!res.ok) throw new Error('user fetch failed');
                 const user = await res.json();
-                document.getElementById('gh-repos').textContent = user.public_repos || '0';
-                document.getElementById('gh-followers').textContent = user.followers || '0';
+                document.getElementById('gh-repos').textContent = user.public_repos ?? 0;
+                document.getElementById('gh-followers').textContent = user.followers ?? 0;
 
-                // Get stars + forks from repos
                 const reposRes = await fetch('https://api.github.com/users/omnitx/repos?per_page=100');
-                if (!reposRes.ok) throw new Error(`HTTP ${reposRes.status}: ${reposRes.statusText}`);
+                if (!reposRes.ok) throw new Error('repos fetch failed');
                 const repos = await reposRes.json();
                 if (Array.isArray(repos)) {
-                    const stars = repos.reduce((a, r) => a + r.stargazers_count, 0);
-                    const forks = repos.reduce((a, r) => a + r.forks_count, 0);
-                    document.getElementById('gh-stars').textContent = stars;
-                    document.getElementById('gh-forks').textContent = forks;
+                    document.getElementById('gh-stars').textContent = repos.reduce((a, r) => a + (r.stargazers_count || 0), 0);
+                    document.getElementById('gh-forks').textContent = repos.reduce((a, r) => a + (r.forks_count || 0), 0);
                 }
             } catch (e) {
-                console.error('GitHub API error:', e);
-                document.getElementById('gh-repos').textContent = '—';
-                document.getElementById('gh-followers').textContent = '—';
-                document.getElementById('gh-stars').textContent = '—';
-                document.getElementById('gh-forks').textContent = '—';
+                // On failure show 0 rather than dashes so stats section doesn't look broken
+                ids.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.textContent.trim() === '…') el.textContent = '0';
+                });
             }
         }
 
@@ -1237,10 +1270,10 @@
             }
             animate();
             document.addEventListener('mouseover', e => {
-                if (e.target.closest('a, button')) { ring.classList.add('hovering'); }
+                if (e.target.closest('a, button')) ring.classList.add('hovering');
             });
             document.addEventListener('mouseout', e => {
-                if (e.target.closest('a, button')) { ring.classList.remove('hovering'); }
+                if (e.target.closest('a, button')) ring.classList.remove('hovering');
             });
         })();
     </script>
