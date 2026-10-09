@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - Imran Ahmed</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=block"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .not-found {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 32px;
+        }
+
+        .not-found .code {
+            font-family: var(--display);
+            font-size: clamp(5rem, 18vw, 9rem);
+            line-height: 1;
+            color: var(--accent);
+        }
+
+        .not-found p {
+            font-family: var(--sans);
+            color: var(--ink-dim);
+            margin: 16px 0 32px;
+            max-width: 32ch;
+        }
+
+        .not-found a {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--bg);
+            background: var(--accent);
+            padding: 12px 24px;
+            border-radius: 999px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="not-found">
+        <div class="code">404</div>
+        <p>This page doesn't exist, but the rest of the site does.</p>
+        <a href="/">Back to the homepage</a>
+    </div>
+</body>
+
+</html>
