@@ -4,773 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imran Ahmed — IT Manager & Developer</title>
+    <title>Imran Ahmed - IT Manager & Developer</title>
     <meta name="description"
-        content="Imran Ahmed — IT Manager, Full-Stack Developer, and Infrastructure Engineer based in Dhaka, Bangladesh. Available for freelance and full-time roles.">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23FFD700'/%3E%3Cstop offset='100%25' stop-color='%23FF4444'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M50 5 L63 38 L98 38 L70 60 L80 95 L50 75 L20 95 L30 60 L2 38 L37 38 Z' fill='url(%23g)'/%3E%3C/svg%3E">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
+        content="Imran Ahmed - IT Manager, Full-Stack Developer, and Infrastructure Engineer based in Dhaka, Bangladesh. Available for freelance and full-time roles.">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23FFD700'/%3E%3Cstop offset='100%25' stop-color='%23FF4444'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M50 5 L63 38 L98 38 L70 60 L80 95 L50 75 L20 95 L30 60 L2 38 L37 38 Z' fill='url(%23g)'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="canonical" href="https://imran.mvp.bd/">
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://imran.mvp.bd/">
+    <meta property="og:title" content="Imran Ahmed - IT Manager & Developer">
+    <meta property="og:description"
+        content="IT Manager, Full-Stack Developer, and Infrastructure Engineer based in Dhaka, Bangladesh. Available for freelance and full-time roles.">
+    <meta property="og:image" content="https://imran.mvp.bd/assets/w_logo-2.png">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Imran Ahmed - IT Manager & Developer">
+    <meta name="twitter:description"
+        content="IT Manager, Full-Stack Developer, and Infrastructure Engineer based in Dhaka, Bangladesh.">
+    <meta name="twitter:image" content="https://imran.mvp.bd/assets/w_logo-2.png">
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Imran Ahmed",
+        "url": "https://imran.mvp.bd/",
+        "image": "https://imran.mvp.bd/assets/w_logo-2.png",
+        "jobTitle": "IT Manager & Developer",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Dhaka",
+            "addressCountry": "BD"
+        },
+        "email": "imranomnitx@duck.com",
+        "sameAs": [
+            "https://github.com/omnitx"
+        ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=block"
         rel="stylesheet">
-    <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        :root {
-            --mono: 'DM Mono', monospace;
-            --sans: 'DM Sans', sans-serif;
-            --display: 'Bebas Neue', sans-serif;
-        }
-
-        html[data-theme="dark"] {
-            --bg: #0a0a0a;
-            --ink: #f0ede8;
-            --ink-dim: rgba(240, 237, 232, 0.35);
-            --ink-muted: rgba(240, 237, 232, 0.15);
-            --accent: #cdff32;
-            --accent-dim: rgba(205, 255, 50, 0.08);
-            --accent-glow: rgba(205, 255, 50, 0.2);
-            --border: rgba(240, 237, 232, 0.08);
-            --card: rgba(255, 255, 255, 0.03);
-        }
-
-        html[data-theme="light"] {
-            --bg: #f5f2ed;
-            --ink: #0a0a0a;
-            --ink-dim: rgba(10, 10, 10, 0.45);
-            --ink-muted: rgba(10, 10, 10, 0.2);
-            --accent: #2a7a00;
-            --accent-dim: rgba(42, 122, 0, 0.07);
-            --accent-glow: rgba(42, 122, 0, 0.2);
-            --border: rgba(10, 10, 10, 0.1);
-            --card: rgba(0, 0, 0, 0.02);
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: var(--sans);
-            background: var(--bg);
-            color: var(--ink);
-            min-height: 100vh;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            transition: background 0.3s ease, color 0.3s ease;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-            opacity: 0.025;
-            pointer-events: none;
-            z-index: 100;
-        }
-
-        .page {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 32px 80px;
-        }
-
-        /* ── HEADER ── */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 32px 0 20px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .brand {
-            font-family: var(--display);
-            font-size: 1.4rem;
-            letter-spacing: 0.05em;
-            color: var(--ink);
-        }
-
-        .brand span {
-            color: var(--accent);
-        }
-
-        nav {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        nav a {
-            font-family: var(--mono);
-            font-size: 0.6rem;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--ink-dim);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        nav a:hover {
-            color: var(--accent);
-        }
-
-        .theme-btn {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--ink-dim);
-            width: 30px;
-            height: 30px;
-            border-radius: 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: border-color 0.2s, color 0.2s;
-        }
-
-        .theme-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .theme-btn svg {
-            width: 13px;
-            height: 13px;
-        }
-
-        /* ── HERO ── */
-        .hero {
-            padding: 60px 0 48px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .hero-tag {
-            font-family: var(--mono);
-            font-size: 0.6rem;
-            color: var(--accent);
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
-
-        .hero-title {
-            font-family: var(--display);
-            font-size: clamp(5rem, 13vw, 12rem);
-            line-height: 0.88;
-            letter-spacing: -0.01em;
-        }
-
-        .hero-title .outline {
-            -webkit-text-stroke: 2px var(--accent);
-            color: transparent;
-            display: block;
-        }
-
-        .hero-title .solid {
-            display: block;
-        }
-
-        .hero-bottom {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            margin-top: 32px;
-            gap: 24px;
-        }
-
-        .hero-desc {
-            font-size: 0.82rem;
-            color: var(--ink-dim);
-            max-width: 420px;
-            line-height: 1.7;
-            font-weight: 300;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 12px;
-            flex-shrink: 0;
-        }
-
-        .btn {
-            font-family: var(--mono);
-            font-size: 0.62rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            padding: 10px 20px;
-            border-radius: 2px;
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-accent {
-            background: var(--accent);
-            color: var(--bg);
-        }
-
-        .btn-accent:hover {
-            opacity: 0.85;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--ink-dim);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        /* ── MARQUEE ── */
-        .marquee-wrap {
-            overflow: hidden;
-            border-bottom: 1px solid var(--border);
-            padding: 12px 32px;
-            background: var(--accent-dim);
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .marquee-track {
-            display: flex;
-            animation: marquee 30s linear infinite;
-            white-space: nowrap;
-        }
-
-        .marquee-track span {
-            font-family: var(--mono);
-            font-size: 0.6rem;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--accent);
-            padding: 0 24px;
-        }
-
-        .marquee-track .sep {
-            color: var(--ink-muted);
-            padding: 0;
-        }
-
-        @keyframes marquee {
-            from {
-                transform: translateX(0);
-            }
-
-            to {
-                transform: translateX(-50%);
-            }
-        }
-
-        /* ── SECTIONS ── */
-        .section {
-            padding: 60px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .section-header {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            margin-bottom: 40px;
-        }
-
-        .section-title {
-            font-family: var(--display);
-            font-size: 4rem;
-            letter-spacing: 0.02em;
-            line-height: 1;
-        }
-
-        .section-tag {
-            font-family: var(--mono);
-            font-size: 0.6rem;
-            color: var(--ink-muted);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-        }
-
-        /* ── SKILLS GRID ── */
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-        }
-
-        .skill-card {
-            background: var(--bg);
-            padding: 28px 24px;
-            transition: background 0.2s;
-        }
-
-        .skill-card:hover {
-            background: var(--card);
-        }
-
-        .skill-icon {
-            font-family: var(--mono);
-            font-size: 0.55rem;
-            color: var(--accent);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-
-        .skill-name {
-            font-family: var(--display);
-            font-size: 1.6rem;
-            letter-spacing: 0.03em;
-            margin-bottom: 8px;
-        }
-
-        .skill-desc {
-            font-size: 0.72rem;
-            color: var(--ink-dim);
-            line-height: 1.5;
-            font-weight: 300;
-        }
-
-        .skill-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 12px;
-        }
-
-        .tag {
-            font-family: var(--mono);
-            font-size: 0.55rem;
-            letter-spacing: 0.1em;
-            color: var(--ink-muted);
-            border: 1px solid var(--border);
-            padding: 3px 8px;
-            border-radius: 2px;
-        }
-
-        /* ── EXPERIENCE ── */
-        .exp-list {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .exp-item {
-            display: grid;
-            grid-template-columns: 180px 1fr;
-            gap: 32px;
-            padding: 28px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .exp-item:last-child {
-            border-bottom: none;
-        }
-
-        .exp-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .exp-date {
-            font-family: var(--mono);
-            font-size: 0.58rem;
-            color: var(--accent);
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-
-        .exp-org {
-            font-family: var(--mono);
-            font-size: 0.6rem;
-            color: var(--ink-muted);
-            letter-spacing: 0.08em;
-        }
-
-        .exp-role {
-            font-family: var(--display);
-            font-size: 1.8rem;
-            letter-spacing: 0.02em;
-            line-height: 1;
-            margin-bottom: 10px;
-        }
-
-        .exp-desc {
-            font-size: 0.78rem;
-            color: var(--ink-dim);
-            line-height: 1.65;
-            font-weight: 300;
-            max-width: 560px;
-        }
-
-        /* ── EDUCATION BLOCK ── */
-        .edu-block {
-            margin-top: 40px;
-            padding-top: 32px;
-            border-top: 1px solid var(--border);
-        }
-
-        .edu-label {
-            font-family: var(--mono);
-            font-size: 0.55rem;
-            color: var(--ink-muted);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
-
-        .edu-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .edu-item {
-            display: grid;
-            grid-template-columns: 180px 1fr;
-            gap: 32px;
-        }
-
-        .edu-date {
-            font-family: var(--mono);
-            font-size: 0.58rem;
-            color: var(--ink-muted);
-            letter-spacing: 0.1em;
-            padding-top: 3px;
-        }
-
-        .edu-name {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--ink);
-            margin-bottom: 4px;
-        }
-
-        .edu-detail {
-            font-size: 0.72rem;
-            color: var(--ink-dim);
-            line-height: 1.55;
-            font-weight: 300;
-        }
-
-        /* ── GITHUB STATS ── */
-        .github-stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-            margin-bottom: 32px;
-        }
-
-        .gh-stat {
-            background: var(--bg);
-            padding: 28px 24px;
-            text-align: center;
-        }
-
-        .gh-num {
-            font-family: var(--display);
-            font-size: 3rem;
-            color: var(--accent);
-            line-height: 1;
-            min-height: 3rem;
-        }
-
-        .gh-label {
-            font-family: var(--mono);
-            font-size: 0.55rem;
-            color: var(--ink-muted);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            margin-top: 6px;
-        }
-
-        /* ── PROJECTS GRID ── */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-            margin-bottom: 1px;
-        }
-
-        .project-card {
-            background: var(--bg);
-            padding: 28px 24px;
-            text-decoration: none;
-            color: var(--ink);
-            transition: background 0.2s;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .project-card:hover {
-            background: var(--card);
-        }
-
-        .project-card:hover .project-name {
-            color: var(--accent);
-        }
-
-        .project-card:hover .project-arrow {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .project-num {
-            font-family: var(--mono);
-            font-size: 0.55rem;
-            color: var(--accent);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
-
-        .project-name {
-            font-family: var(--display);
-            font-size: 1.8rem;
-            letter-spacing: 0.02em;
-            line-height: 1;
-            margin-bottom: 10px;
-            transition: color 0.2s;
-        }
-
-        .project-type {
-            font-family: var(--mono);
-            font-size: 0.58rem;
-            color: var(--ink-muted);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-
-        .project-desc {
-            font-size: 0.72rem;
-            color: var(--ink-dim);
-            line-height: 1.55;
-            font-weight: 300;
-            flex: 1;
-        }
-
-        .project-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 16px;
-        }
-
-        .project-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .project-arrow {
-            font-family: var(--mono);
-            font-size: 0.62rem;
-            color: var(--accent);
-            opacity: 0;
-            transform: translateX(-6px);
-            transition: opacity 0.2s, transform 0.2s;
-            flex-shrink: 0;
-            margin-left: 8px;
-        }
-
-        /* ── CONTACT ── */
-        .contact-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-        }
-
-        .contact-card {
-            background: var(--bg);
-            padding: 32px 28px;
-            text-decoration: none;
-            color: var(--ink);
-            transition: background 0.2s;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .contact-card:hover {
-            background: var(--card);
-        }
-
-        .contact-card:hover .contact-label {
-            color: var(--accent);
-        }
-
-        .contact-label {
-            font-family: var(--mono);
-            font-size: 0.58rem;
-            color: var(--ink-muted);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            transition: color 0.2s;
-        }
-
-        .contact-value {
-            font-family: var(--display);
-            font-size: 1.4rem;
-            letter-spacing: 0.03em;
-        }
-
-        /* ── FOOTER ── */
-        .footer {
-            padding: 28px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 40px;
-            border-top: 1px solid var(--border);
-        }
-
-        .footer-text {
-            font-family: var(--mono);
-            font-size: 0.55rem;
-            color: var(--ink-muted);
-            letter-spacing: 0.1em;
-        }
-
-        /* ── CURSOR ── */
-        .cursor-dot {
-            position: fixed;
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .cursor-ring {
-            position: fixed;
-            width: 28px;
-            height: 28px;
-            border: 1px solid var(--accent);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            transition: opacity 0.2s, width 0.25s, height 0.25s;
-        }
-
-        .cursor-dot.active,
-        .cursor-ring.active {
-            opacity: 1;
-        }
-
-        .cursor-ring.hovering {
-            width: 44px;
-            height: 44px;
-        }
-
-        body.custom-cursor * {
-            cursor: none !important;
-        }
-
-        /* ── REVEAL ── */
-        .reveal {
-            opacity: 0;
-            transform: translateY(16px);
-            animation: reveal 0.6s ease forwards;
-        }
-
-        @keyframes reveal {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .r1 { animation-delay: 0.05s }
-        .r2 { animation-delay: 0.1s }
-        .r3 { animation-delay: 0.15s }
-        .r4 { animation-delay: 0.2s }
-        .r5 { animation-delay: 0.25s }
-        .r6 { animation-delay: 0.3s }
-
-        /* ── RESPONSIVE ── */
-        @media (max-width: 768px) {
-            .page {
-                padding: 0 20px 60px;
-            }
-
-            .hero-title {
-                font-size: clamp(3.5rem, 16vw, 7rem);
-            }
-
-            .hero-bottom {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .skills-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .projects-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .github-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .exp-item {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-
-            .edu-item {
-                grid-template-columns: 1fr;
-                gap: 4px;
-            }
-
-            .contact-grid {
-                grid-template-columns: 1fr;
-            }
-
-            nav {
-                display: none;
-            }
-
-            .section-title {
-                font-size: 2.8rem;
-            }
-
-            .footer {
-                flex-direction: column;
-                gap: 8px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -789,7 +73,7 @@
                 <a href="#experience">Experience</a>
                 <a href="#github">Open Source</a>
                 <a href="#contact">Contact</a>
-                <a href="/cv.pdf" download
+                <a href="/Imran%20Ahmed%20-%20Resume.pdf" download
                     style="color:var(--accent);border:1px solid var(--accent);padding:4px 12px;border-radius:2px;">CV
                     ↓</a>
             </nav>
@@ -808,8 +92,7 @@
         </header>
 
         <!-- HERO -->
-        <!-- FIX 1: Removed "CREATIVE BUILDER" headline. Replaced with clear role title. -->
-        <!-- FIX 2: Rewrote hero tag and description to lead with IT/dev work, not design. -->
+
         <section class="hero reveal r2">
             <div class="hero-tag">IT Manager · Developer · Infrastructure · Dhaka, BD</div>
             <h1 class="hero-title">
@@ -817,7 +100,9 @@
                 <span class="outline">AHMED</span>
             </h1>
             <div class="hero-bottom">
-                <p class="hero-desc">IT Manager at Herbs World Limited with 6+ years building and running the systems businesses depend on — from e-commerce platforms and custom internal tools to cloud infrastructure, network security, and automation workflows.</p>
+                <p class="hero-desc">IT Manager at Herbs World Limited with 6+ years building and running the systems
+                    businesses depend on, from e-commerce platforms and custom internal tools to cloud infrastructure,
+                    network security, and automation workflows.</p>
                 <div class="hero-actions">
                     <a href="#contact" class="btn btn-accent">Get in Touch</a>
                     <a href="#projects" class="btn btn-outline">View Work</a>
@@ -828,7 +113,7 @@
     </div>
 
     <!-- MARQUEE -->
-    <!-- FIX 3: Replaced mixed creative/tech ticker with focused technical skills only. -->
+
     <div class="marquee-wrap reveal r3">
         <div class="marquee-track">
             <span>IT Management</span><span class="sep">·</span>
@@ -870,9 +155,10 @@
             <div class="skills-grid">
                 <div class="skill-card">
                     <div class="skill-icon">01 · Infrastructure</div>
-                    <!-- FIX 4: Reordered skills — IT/infrastructure first, creative last. -->
                     <div class="skill-name">Self-hosting & Cloud</div>
-                    <div class="skill-desc">Running cloud infrastructure on Oracle Free Tier. Dockerized services, reverse proxies, SSL termination, and ZeroTier mesh networking across personal and enterprise environments.</div>
+                    <div class="skill-desc">Running cloud infrastructure on Oracle Free Tier. Dockerized services,
+                        reverse proxies, SSL termination, and ZeroTier mesh networking across personal and enterprise
+                        environments.</div>
                     <div class="skill-tags">
                         <span class="tag">Docker</span>
                         <span class="tag">Portainer</span>
@@ -885,7 +171,9 @@
                 <div class="skill-card">
                     <div class="skill-icon">02 · Networking</div>
                     <div class="skill-name">Network & Security</div>
-                    <div class="skill-desc">Network security, VPN setup, mesh networking, and reverse proxy configuration. Managing DNS, SSL/TLS, and Cloudflare across personal and enterprise setups.</div>
+                    <div class="skill-desc">Network security, VPN setup, mesh networking, and reverse proxy
+                        configuration. Managing DNS, SSL/TLS, and Cloudflare across personal and enterprise setups.
+                    </div>
                     <div class="skill-tags">
                         <span class="tag">WireGuard</span>
                         <span class="tag">Nginx Proxy</span>
@@ -898,7 +186,9 @@
                 <div class="skill-card">
                     <div class="skill-icon">03 · IT Management</div>
                     <div class="skill-name">IT Operations</div>
-                    <div class="skill-desc">Managing IT infrastructure, hardware procurement, software licensing, and technical teams. Overseeing digital operations, SEO strategy, and end-user support at scale.</div>
+                    <div class="skill-desc">Managing IT infrastructure, hardware procurement, software licensing, and
+                        technical teams. Overseeing digital operations, SEO strategy, and end-user support at scale.
+                    </div>
                     <div class="skill-tags">
                         <span class="tag">IT Infrastructure</span>
                         <span class="tag">Team Management</span>
@@ -910,7 +200,8 @@
                 <div class="skill-card">
                     <div class="skill-icon">04 · Automation & Dev</div>
                     <div class="skill-name">Workflow & Web</div>
-                    <div class="skill-desc">Building automation workflows with n8n, WordPress development, custom web builds, and scripting with JavaScript. Connecting tools to eliminate manual work.</div>
+                    <div class="skill-desc">Building automation workflows with n8n, WordPress development, custom web
+                        builds, and scripting with JavaScript. Connecting tools to eliminate manual work.</div>
                     <div class="skill-tags">
                         <span class="tag">n8n</span>
                         <span class="tag">WordPress</span>
@@ -923,7 +214,8 @@
                 <div class="skill-card">
                     <div class="skill-icon">05 · Web</div>
                     <div class="skill-name">UI/UX & Design</div>
-                    <div class="skill-desc">End-to-end UI/UX design and implementation. Designing for usability while maintaining strong visual identity and brand consistency across digital products.</div>
+                    <div class="skill-desc">End-to-end UI/UX design and implementation. Designing for usability while
+                        maintaining strong visual identity and brand consistency across digital products.</div>
                     <div class="skill-tags">
                         <span class="tag">Figma</span>
                         <span class="tag">XD</span>
@@ -936,7 +228,8 @@
                 <div class="skill-card">
                     <div class="skill-icon">06 · Creative</div>
                     <div class="skill-name">Media Production</div>
-                    <div class="skill-desc">Photo editing, video production, short films, live broadcast, and short-form content creation. 500+ videos produced across two YouTube channels since 2019.</div>
+                    <div class="skill-desc">Photo editing, video production, short films, live broadcast, and short-form
+                        content creation. 500+ videos produced across two YouTube channels since 2019.</div>
                     <div class="skill-tags">
                         <span class="tag">Photoshop</span>
                         <span class="tag">Premiere Pro</span>
@@ -961,8 +254,9 @@
                     <div class="project-num">01 · Live Client</div>
                     <div class="project-name">Herbs World</div>
                     <div class="project-type">E-commerce & Corporate</div>
-                    <!-- FIX 5: Added role clarity and slightly stronger description for each project. -->
-                    <div class="project-desc">Full website design, development, and ongoing IT management for Herbs World Limited. WordPress-based with custom UI, SEO optimization, and product catalog management. Primary client — in production since 2019.</div>
+                    <div class="project-desc">Full website design, development, and ongoing IT management for Herbs
+                        World Limited. WordPress-based with custom UI, SEO optimization, and product catalog management.
+                        Primary client, in production since 2019.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">WordPress</span>
@@ -977,7 +271,9 @@
                     <div class="project-num">02 · Live Client</div>
                     <div class="project-name">Ajker Products</div>
                     <div class="project-type">E-commerce</div>
-                    <div class="project-desc">E-commerce platform design and development. Custom product pages, category management, and performance-optimized shopping experience built on WordPress and WooCommerce.</div>
+                    <div class="project-desc">E-commerce platform design and development. Custom product pages, category
+                        management, and performance-optimized shopping experience built on WordPress and WooCommerce.
+                    </div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">WordPress</span>
@@ -992,7 +288,8 @@
                     <div class="project-num">03 · Live Client</div>
                     <div class="project-name">Rabeya Book House</div>
                     <div class="project-type">E-commerce & Publishing</div>
-                    <div class="project-desc">Complete web presence for a book publisher and retailer. Custom design, full product catalog, and digital storefront built to reflect the brand's identity.</div>
+                    <div class="project-desc">Complete web presence for a book publisher and retailer. Custom design,
+                        full product catalog, and digital storefront built to reflect the brand's identity.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">WordPress</span>
@@ -1007,7 +304,9 @@
                     <div class="project-num">04 · Internal Tool</div>
                     <div class="project-name">HWL CRM</div>
                     <div class="project-type">Sales & Inventory System</div>
-                    <div class="project-desc">Custom CRM built for Herbs World Limited — managing sales pipeline, inventory tracking, and internal operations. Replaced a manual spreadsheet workflow and is used daily by the team.</div>
+                    <div class="project-desc">Custom CRM built for Herbs World Limited, managing the sales pipeline,
+                        inventory tracking, and internal operations. Replaced a manual spreadsheet workflow and is used
+                        daily by the team.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">CRM</span>
@@ -1021,7 +320,8 @@
                     <div class="project-num">05 · Open Source</div>
                     <div class="project-name">NeonIndex</div>
                     <div class="project-type">PHP Directory Lister</div>
-                    <div class="project-desc">A modern PHP directory lister with a neon-themed UI, admin panel, and file management. Open source and available on GitHub.</div>
+                    <div class="project-desc">A modern PHP directory lister with a neon-themed UI, admin panel, and file
+                        management. Open source and available on GitHub.</div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">PHP</span>
@@ -1032,12 +332,13 @@
                     </div>
                 </a>
 
-                <!-- FIX 6: Added links to both YouTube channels. -->
                 <div class="project-card" style="cursor:default;">
                     <div class="project-num">06 · Content · 500+ Videos</div>
                     <div class="project-name">immekun & imranah</div>
                     <div class="project-type">Video Production & Channels</div>
-                    <div class="project-desc">Managing and producing content for two YouTube channels since 2019 — over 500 videos covering short-form content, After Effects motion work, and creative productions.</div>
+                    <div class="project-desc">Managing and producing content for two YouTube channels since 2019, with over
+                        500 videos covering short-form content, After Effects motion work, and creative productions.
+                    </div>
                     <div class="project-footer">
                         <div class="project-tags">
                             <span class="tag">After Effects</span>
@@ -1046,9 +347,11 @@
                         </div>
                         <div style="display:flex;gap:8px;margin-top:0;">
                             <a href="https://www.youtube.com/@immekun" target="_blank" rel="noopener"
-                               style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.08em;color:var(--accent);text-decoration:none;">@immekun ↗</a>
+                                style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.08em;color:var(--accent);text-decoration:none;">@immekun
+                                ↗</a>
                             <a href="https://www.youtube.com/@imranah" target="_blank" rel="noopener"
-                               style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.08em;color:var(--accent);text-decoration:none;">@imranah ↗</a>
+                                style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.08em;color:var(--accent);text-decoration:none;">@imranah
+                                ↗</a>
                         </div>
                     </div>
                 </div>
@@ -1063,15 +366,18 @@
                 <span class="section-tag">Work history</span>
             </div>
             <div class="exp-list">
-                <!-- FIX 7: Rewrote experience descriptions to focus on achievements, not just duties. -->
                 <div class="exp-item">
                     <div class="exp-meta">
-                        <span class="exp-date">Jan 2019 — Present</span>
+                        <span class="exp-date">Jan 2019 - Present</span>
                         <span class="exp-org">Herbs World Limited</span>
                     </div>
                     <div>
                         <div class="exp-role">IT Manager</div>
-                        <div class="exp-desc">Sole IT lead responsible for all technical infrastructure, network security, and digital operations. Built and maintain the company's e-commerce platform, internal CRM, and cloud infrastructure. Reduced reliance on third-party tools by building custom solutions in-house. Lead a small team across IT support, SEO, and web operations.</div>
+                        <div class="exp-desc">Sole IT lead responsible for all technical infrastructure, network
+                            security, and digital operations. Built and maintain the company's e-commerce platform,
+                            internal CRM, and cloud infrastructure. Reduced reliance on third-party tools by building
+                            custom solutions in-house. Lead a small team across IT support, SEO, and web operations.
+                        </div>
                         <div class="skill-tags" style="margin-top:16px;">
                             <span class="tag">WordPress</span>
                             <span class="tag">Network Security</span>
@@ -1083,13 +389,14 @@
                 </div>
                 <div class="exp-item">
                     <div class="exp-meta">
-                        <span class="exp-date">Jan 2020 — Present</span>
+                        <span class="exp-date">Jan 2020 - Present</span>
                         <span class="exp-org">Self-employed</span>
                     </div>
                     <div>
-                        <!-- FIX 8: Renamed "Freelance Designer" to "Freelance Developer & Designer" — more accurate to the actual work. -->
                         <div class="exp-role">Freelance Developer & Designer</div>
-                        <div class="exp-desc">Building websites, e-commerce platforms, and digital content for clients. Work spans WordPress development, UI/UX design, brand identity, 3D rendering, and video production. Clients range from retail businesses to independent professionals.</div>
+                        <div class="exp-desc">Building websites, e-commerce platforms, and digital content for clients.
+                            Work spans WordPress development, UI/UX design, brand identity, 3D rendering, and video
+                            production. Clients range from retail businesses to independent professionals.</div>
                         <div class="skill-tags" style="margin-top:16px;">
                             <span class="tag">WordPress</span>
                             <span class="tag">Cinema 4D</span>
@@ -1101,22 +408,25 @@
                 </div>
             </div>
 
-            <!-- FIX 9: Moved education out of the experience list into its own compact block. -->
             <div class="edu-block">
                 <div class="edu-label">Education</div>
                 <div class="edu-list">
                     <div class="edu-item">
                         <div class="edu-date">Currently pursuing</div>
                         <div>
-                            <div class="edu-name">Bachelor's Degree — Govt. Bangla College, Dhaka University affiliation</div>
-                            <div class="edu-detail">One of seven colleges affiliated with the University of Dhaka (transitioning to Dhaka Central University).</div>
+                            <div class="edu-name">Bachelor's Degree - Govt. Bangla College, Dhaka University affiliation
+                            </div>
+                            <div class="edu-detail">One of seven colleges affiliated with the University of Dhaka
+                                (transitioning to Dhaka Central University).</div>
                         </div>
                     </div>
                     <div class="edu-item">
                         <div class="edu-date">Completed</div>
                         <div>
-                            <div class="edu-name">Higher Secondary — Bangladesh Air Force College Kurmitola (BAFSK)</div>
-                            <div class="edu-detail">General Secretary of the Cultural Club. Led IT operations, club photography, and event coordination.</div>
+                            <div class="edu-name">Higher Secondary - Bangladesh Air Force College Kurmitola (BAFSK)
+                            </div>
+                            <div class="edu-detail">General Secretary of the Cultural Club. Led IT operations, club
+                                photography, and event coordination.</div>
                         </div>
                     </div>
                 </div>
@@ -1124,7 +434,6 @@
         </section>
 
         <!-- GITHUB -->
-        <!-- FIX 10: GitHub stats now load from the API with a loading state and proper error handling. -->
         <section class="section reveal r4" id="github">
             <div class="section-header">
                 <h2 class="section-title">OPEN SOURCE</h2>
@@ -1161,8 +470,6 @@
         </section>
 
         <!-- CONTACT -->
-        <!-- FIX 11: Removed duplicate portfolio link (omnitx.github.io) — only one portfolio URL needed. -->
-        <!-- Added LinkedIn placeholder slot. -->
         <section class="section reveal r5" id="contact">
             <div class="section-header">
                 <h2 class="section-title">CONTACT</h2>
@@ -1173,15 +480,15 @@
                     <span class="contact-label">Email</span>
                     <span class="contact-value">imranomnitx@duck.com</span>
                 </a>
-                <a href="https://wa.me/8801840538790" target="_blank" class="contact-card">
+                <a href="https://wa.me/8801840538790" target="_blank" rel="noopener" class="contact-card">
                     <span class="contact-label">WhatsApp</span>
                     <span class="contact-value">+880 1840-538790</span>
                 </a>
-                <a href="https://github.com/omnitx" target="_blank" class="contact-card">
+                <a href="https://github.com/omnitx" target="_blank" rel="noopener" class="contact-card">
                     <span class="contact-label">GitHub</span>
                     <span class="contact-value">github.com/omnitx</span>
                 </a>
-                <a href="https://linktr.ee/immekun" target="_blank" class="contact-card">
+                <a href="https://linktr.ee/immekun" target="_blank" rel="noopener" class="contact-card">
                     <span class="contact-label">Linktree</span>
                     <span class="contact-value">linktr.ee/immekun</span>
                 </a>
@@ -1190,93 +497,13 @@
 
         <!-- FOOTER -->
         <footer class="footer reveal r6">
-            <span class="footer-text">© <span id="yr"></span> Imran Ahmed — Designed & Built by Imran Ahmed</span>
+            <span class="footer-text">© <span id="yr"></span> Imran Ahmed</span>
             <span class="footer-text">Dhaka, Bangladesh</span>
         </footer>
 
     </div>
 
-    <script>
-        // Theme
-        (function () {
-            const stored = localStorage.getItem('portfolio-theme');
-            const isDark = stored === null ? true : stored === 'dark';
-            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-            const sun = document.getElementById('icon-sun');
-            const moon = document.getElementById('icon-moon');
-            function applyIcons(dark) {
-                sun.style.display = dark ? 'none' : 'block';
-                moon.style.display = dark ? 'block' : 'none';
-            }
-            applyIcons(isDark);
-            document.getElementById('theme-toggle').addEventListener('click', () => {
-                const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', next);
-                localStorage.setItem('portfolio-theme', next);
-                applyIcons(next === 'dark');
-            });
-        })();
-
-        // GitHub Stats — FIX 10: Added loading state, fixed error handling, shows 0 instead of — on empty
-        async function loadGitHub() {
-            const ids = ['gh-repos', 'gh-followers', 'gh-stars', 'gh-forks'];
-            try {
-                const res = await fetch('https://api.github.com/users/omnitx');
-                if (!res.ok) throw new Error('user fetch failed');
-                const user = await res.json();
-                document.getElementById('gh-repos').textContent = user.public_repos ?? 0;
-                document.getElementById('gh-followers').textContent = user.followers ?? 0;
-
-                const reposRes = await fetch('https://api.github.com/users/omnitx/repos?per_page=100');
-                if (!reposRes.ok) throw new Error('repos fetch failed');
-                const repos = await reposRes.json();
-                if (Array.isArray(repos)) {
-                    document.getElementById('gh-stars').textContent = repos.reduce((a, r) => a + (r.stargazers_count || 0), 0);
-                    document.getElementById('gh-forks').textContent = repos.reduce((a, r) => a + (r.forks_count || 0), 0);
-                }
-            } catch (e) {
-                // On failure show 0 rather than dashes so stats section doesn't look broken
-                ids.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el && el.textContent.trim() === '…') el.textContent = '0';
-                });
-            }
-        }
-
-        loadGitHub();
-        document.getElementById('yr').textContent = new Date().getFullYear();
-
-        // Custom cursor
-        (function () {
-            const hasMouse = window.matchMedia('(pointer: fine)').matches;
-            const isWide = window.matchMedia('(min-width: 768px)').matches;
-            if (!hasMouse || !isWide) return;
-            document.body.classList.add('custom-cursor');
-            const dot = document.getElementById('cursorDot');
-            const ring = document.getElementById('cursorRing');
-            let mx = -100, my = -100, rx = -100, ry = -100;
-            document.addEventListener('mousemove', e => {
-                mx = e.clientX; my = e.clientY;
-                dot.style.left = mx + 'px'; dot.style.top = my + 'px';
-                dot.classList.add('active'); ring.classList.add('active');
-            });
-            document.addEventListener('mouseleave', () => {
-                dot.classList.remove('active'); ring.classList.remove('active');
-            });
-            function animate() {
-                rx += (mx - rx) * 0.1; ry += (my - ry) * 0.1;
-                ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-                requestAnimationFrame(animate);
-            }
-            animate();
-            document.addEventListener('mouseover', e => {
-                if (e.target.closest('a, button')) ring.classList.add('hovering');
-            });
-            document.addEventListener('mouseout', e => {
-                if (e.target.closest('a, button')) ring.classList.remove('hovering');
-            });
-        })();
-    </script>
+    <script src="script.js" defer></script>
 </body>
 
 </html>

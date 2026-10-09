@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://imran.mvp.bd/sitemap.xml
