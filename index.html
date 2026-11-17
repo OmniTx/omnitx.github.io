@@ -4,18 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imran Ahmed - IT Manager & Developer</title>
+    <title>Imran Ahmed - IT Manager &amp; Developer</title>
     <meta name="description"
         content="Imran Ahmed - IT Manager, Full-Stack Developer, and Infrastructure Engineer based in Dhaka, Bangladesh. Available for freelance and full-time roles.">
     <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23FFD700'/%3E%3Cstop offset='100%25' stop-color='%23FF4444'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M50 5 L63 38 L98 38 L70 60 L80 95 L50 75 L20 95 L30 60 L2 38 L37 38 Z' fill='url(%23g)'/%3E%3C/svg%3E">
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23cdff32'/%3E%3Cstop offset='100%25' stop-color='%23a3e600'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M50 5 L63 38 L98 38 L70 60 L80 95 L50 75 L20 95 L30 60 L2 38 L37 38 Z' fill='url(%23g)'/%3E%3C/svg%3E">
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link rel="canonical" href="https://imran.mvp.bd/">
 
     <!-- Open Graph / Facebook / LinkedIn -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://imran.mvp.bd/">
-    <meta property="og:title" content="Imran Ahmed - IT Manager & Developer">
+    <meta property="og:title" content="Imran Ahmed - IT Manager &amp; Developer">
     <meta property="og:description"
         content="IT Manager, Full-Stack Developer, and Infrastructure Engineer based in Dhaka, Bangladesh. Available for freelance and full-time roles.">
     <meta property="og:image" content="https://imran.mvp.bd/assets/w_logo-2.png">
@@ -23,7 +23,7 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Imran Ahmed - IT Manager & Developer">
+    <meta name="twitter:title" content="Imran Ahmed - IT Manager &amp; Developer">
     <meta name="twitter:description"
         content="IT Manager, Full-Stack Developer, and Infrastructure Engineer based in Dhaka, Bangladesh.">
     <meta name="twitter:image" content="https://imran.mvp.bd/assets/w_logo-2.png">
@@ -44,7 +44,11 @@
         },
         "email": "imranomnitx@duck.com",
         "sameAs": [
-            "https://github.com/omnitx"
+            "https://github.com/omnitx",
+            "https://wordpress.org/plugins/notify-with-gowa/",
+            "https://www.youtube.com/@immekun",
+            "https://www.youtube.com/@imranah",
+            "https://linktr.ee/immekun"
         ]
     }
     </script>
@@ -65,44 +69,48 @@
     <div class="page">
 
         <!-- HEADER -->
-        <header class="header reveal r1">
-            <div class="brand">IMRAN<span>.</span>AHMED</div>
+        <header class="header">
+            <a href="#" class="brand">IMRAN<span>.</span>AHMED</a>
             <nav>
                 <a href="#skills">Skills</a>
                 <a href="#projects">Projects</a>
                 <a href="#experience">Experience</a>
                 <a href="#github">Open Source</a>
                 <a href="#contact">Contact</a>
-                <a href="/Imran%20Ahmed%20-%20Resume.pdf" download
-                    style="color:var(--accent);border:1px solid var(--accent);padding:4px 12px;border-radius:2px;">CV
-                    ↓</a>
             </nav>
-            <button class="theme-btn" id="theme-toggle" aria-label="Toggle theme">
-                <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" style="display:none">
-                    <circle cx="12" cy="12" r="4" />
-                    <path
-                        d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                </svg>
-                <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                </svg>
-            </button>
+            <div class="nav-actions">
+                <button type="button" class="cmd-badge" id="open-cmd" aria-label="Open command palette">
+                    <span>Command</span>
+                    <span style="opacity:0.6;">⌘K</span>
+                </button>
+                <a href="/Imran%20Ahmed%20-%20Resume.pdf" download class="cv-btn">CV ↓</a>
+                <button class="theme-btn" id="theme-toggle" aria-label="Toggle theme">
+                    <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                        <circle cx="12" cy="12" r="4" />
+                        <path
+                            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                    </svg>
+                    <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                    </svg>
+                </button>
+            </div>
         </header>
 
         <!-- HERO -->
-
-        <section class="hero reveal r2">
-            <div class="hero-tag">IT Manager · Developer · Infrastructure · Dhaka, BD</div>
-            <h1 class="hero-title">
+        <section class="hero">
+            <div class="hero-tag reveal" style="--delay: 40ms;">
+                <span class="pulse-dot"></span>
+                <span>IT Manager · Developer · Infrastructure · Dhaka, BD</span>
+            </div>
+            <h1 class="hero-title reveal" style="--delay: 110ms;">
                 <span class="solid">IMRAN</span>
                 <span class="outline">AHMED</span>
             </h1>
-            <div class="hero-bottom">
-                <p class="hero-desc">IT Manager at Herbs World Limited with 6+ years building and running the systems
-                    businesses depend on, from e-commerce platforms and custom internal tools to cloud infrastructure,
-                    network security, and automation workflows.</p>
+            <div class="hero-bottom reveal" style="--delay: 180ms;">
+                <p class="hero-desc">IT Manager at Herbs World Limited with <span id="exp-years">7+</span> years building and running the systems businesses depend on, from e-commerce platforms and custom internal tools to cloud infrastructure, network security, and automation workflows.</p>
                 <div class="hero-actions">
                     <a href="#contact" class="btn btn-accent">Get in Touch</a>
                     <a href="#projects" class="btn btn-outline">View Work</a>
@@ -113,8 +121,7 @@
     </div>
 
     <!-- MARQUEE -->
-
-    <div class="marquee-wrap reveal r3">
+    <div class="marquee-wrap reveal" style="--delay: 60ms;">
         <div class="marquee-track">
             <span>IT Management</span><span class="sep">·</span>
             <span>Docker</span><span class="sep">·</span>
@@ -147,15 +154,15 @@
     <div class="page">
 
         <!-- SKILLS -->
-        <section class="section reveal r3" id="skills">
-            <div class="section-header">
+        <section class="section" id="skills">
+            <div class="section-header reveal">
                 <h2 class="section-title">SKILLS</h2>
                 <span class="section-tag">What I do</span>
             </div>
             <div class="skills-grid">
-                <div class="skill-card">
+                <div class="skill-card reveal" style="--delay: 40ms;">
                     <div class="skill-icon">01 · Infrastructure</div>
-                    <div class="skill-name">Self-hosting & Cloud</div>
+                    <div class="skill-name">Self-hosting &amp; Cloud</div>
                     <div class="skill-desc">Running cloud infrastructure on Oracle Free Tier. Dockerized services,
                         reverse proxies, SSL termination, and ZeroTier mesh networking across personal and enterprise
                         environments.</div>
@@ -168,9 +175,9 @@
                         <span class="tag">Tailscale</span>
                     </div>
                 </div>
-                <div class="skill-card">
+                <div class="skill-card reveal" style="--delay: 90ms;">
                     <div class="skill-icon">02 · Networking</div>
-                    <div class="skill-name">Network & Security</div>
+                    <div class="skill-name">Network &amp; Security</div>
                     <div class="skill-desc">Network security, VPN setup, mesh networking, and reverse proxy
                         configuration. Managing DNS, SSL/TLS, and Cloudflare across personal and enterprise setups.
                     </div>
@@ -183,7 +190,7 @@
                         <span class="tag">SSL/TLS</span>
                     </div>
                 </div>
-                <div class="skill-card">
+                <div class="skill-card reveal" style="--delay: 140ms;">
                     <div class="skill-icon">03 · IT Management</div>
                     <div class="skill-name">IT Operations</div>
                     <div class="skill-desc">Managing IT infrastructure, hardware procurement, software licensing, and
@@ -197,9 +204,9 @@
                         <span class="tag">Support</span>
                     </div>
                 </div>
-                <div class="skill-card">
-                    <div class="skill-icon">04 · Automation & Dev</div>
-                    <div class="skill-name">Workflow & Web</div>
+                <div class="skill-card reveal" style="--delay: 190ms;">
+                    <div class="skill-icon">04 · Automation &amp; Dev</div>
+                    <div class="skill-name">Workflow &amp; Web</div>
                     <div class="skill-desc">Building automation workflows with n8n, WordPress development, custom web
                         builds, and scripting with JavaScript. Connecting tools to eliminate manual work.</div>
                     <div class="skill-tags">
@@ -211,9 +218,9 @@
                         <span class="tag">REST APIs</span>
                     </div>
                 </div>
-                <div class="skill-card">
+                <div class="skill-card reveal" style="--delay: 240ms;">
                     <div class="skill-icon">05 · Web</div>
-                    <div class="skill-name">UI/UX & Design</div>
+                    <div class="skill-name">UI/UX &amp; Design</div>
                     <div class="skill-desc">End-to-end UI/UX design and implementation. Designing for usability while
                         maintaining strong visual identity and brand consistency across digital products.</div>
                     <div class="skill-tags">
@@ -225,7 +232,7 @@
                         <span class="tag">Responsive</span>
                     </div>
                 </div>
-                <div class="skill-card">
+                <div class="skill-card reveal" style="--delay: 290ms;">
                     <div class="skill-icon">06 · Creative</div>
                     <div class="skill-name">Media Production</div>
                     <div class="skill-desc">Photo editing, video production, short films, live broadcast, and short-form
@@ -243,17 +250,17 @@
         </section>
 
         <!-- PROJECTS -->
-        <section class="section reveal r4" id="projects">
-            <div class="section-header">
+        <section class="section" id="projects">
+            <div class="section-header reveal">
                 <h2 class="section-title">PROJECTS</h2>
-                <span class="section-tag">Work & builds</span>
+                <span class="section-tag">Work &amp; builds</span>
             </div>
             <div class="projects-grid">
 
-                <a href="https://herbsworld.net" target="_blank" rel="noopener" class="project-card">
+                <a href="https://herbsworld.net" target="_blank" rel="noopener" class="project-card reveal" style="--delay: 40ms;">
                     <div class="project-num">01 · Live Client</div>
                     <div class="project-name">Herbs World</div>
-                    <div class="project-type">E-commerce & Corporate</div>
+                    <div class="project-type">E-commerce &amp; Corporate</div>
                     <div class="project-desc">Full website design, development, and ongoing IT management for Herbs
                         World Limited. WordPress-based with custom UI, SEO optimization, and product catalog management.
                         Primary client, in production since 2019.</div>
@@ -267,7 +274,7 @@
                     </div>
                 </a>
 
-                <a href="https://ajkerproducts.com" target="_blank" rel="noopener" class="project-card">
+                <a href="https://ajkerproducts.com" target="_blank" rel="noopener" class="project-card reveal" style="--delay: 90ms;">
                     <div class="project-num">02 · Live Client</div>
                     <div class="project-name">Ajker Products</div>
                     <div class="project-type">E-commerce</div>
@@ -284,10 +291,10 @@
                     </div>
                 </a>
 
-                <a href="https://rabeyabookhouse.com" target="_blank" rel="noopener" class="project-card">
+                <a href="https://rabeyabookhouse.com" target="_blank" rel="noopener" class="project-card reveal" style="--delay: 140ms;">
                     <div class="project-num">03 · Live Client</div>
                     <div class="project-name">Rabeya Book House</div>
-                    <div class="project-type">E-commerce & Publishing</div>
+                    <div class="project-type">E-commerce &amp; Publishing</div>
                     <div class="project-desc">Complete web presence for a book publisher and retailer. Custom design,
                         full product catalog, and digital storefront built to reflect the brand's identity.</div>
                     <div class="project-footer">
@@ -300,10 +307,10 @@
                     </div>
                 </a>
 
-                <div class="project-card" style="cursor:default;">
+                <div class="project-card reveal" style="cursor:default; --delay: 190ms;">
                     <div class="project-num">04 · Internal Tool</div>
                     <div class="project-name">HWL CRM</div>
-                    <div class="project-type">Sales & Inventory System</div>
+                    <div class="project-type">Sales &amp; Inventory System</div>
                     <div class="project-desc">Custom CRM built for Herbs World Limited, managing the sales pipeline,
                         inventory tracking, and internal operations. Replaced a manual spreadsheet workflow and is used
                         daily by the team.</div>
@@ -316,10 +323,10 @@
                     </div>
                 </div>
 
-                <a href="https://wordpress.org/plugins/notify-with-gowa/" target="_blank" rel="noopener" class="project-card">
+                <a href="https://wordpress.org/plugins/notify-with-gowa/" target="_blank" rel="noopener" class="project-card reveal" style="--delay: 240ms;">
                     <div class="project-num">05 · Open Source</div>
                     <div class="project-name">Notify with GOWA</div>
-                    <div class="project-type">WordPress & WooCommerce Plugin</div>
+                    <div class="project-type">WordPress &amp; WooCommerce Plugin</div>
                     <div class="project-desc">Sends WooCommerce order alerts and customer messages over WhatsApp through
                         a self-hosted GOWA gateway. Listed in the official WordPress plugin directory and open source
                         on GitHub.</div>
@@ -333,10 +340,10 @@
                     </div>
                 </a>
 
-                <div class="project-card" style="cursor:default;">
+                <div class="project-card reveal" style="cursor:default; --delay: 290ms;">
                     <div class="project-num">06 · Content · 500+ Videos</div>
-                    <div class="project-name">immekun & imranah</div>
-                    <div class="project-type">Video Production & Channels</div>
+                    <div class="project-name">immekun &amp; imranah</div>
+                    <div class="project-type">Video Production &amp; Channels</div>
                     <div class="project-desc">Managing and producing content for two YouTube channels since 2019, with over
                         500 videos covering short-form content, After Effects motion work, and creative productions.
                     </div>
@@ -361,13 +368,13 @@
         </section>
 
         <!-- EXPERIENCE -->
-        <section class="section reveal r4" id="experience">
-            <div class="section-header">
+        <section class="section" id="experience">
+            <div class="section-header reveal">
                 <h2 class="section-title">EXPERIENCE</h2>
                 <span class="section-tag">Work history</span>
             </div>
             <div class="exp-list">
-                <div class="exp-item">
+                <div class="exp-item reveal" style="--delay: 50ms;">
                     <div class="exp-meta">
                         <span class="exp-date">Jan 2019 - Present</span>
                         <span class="exp-org">Herbs World Limited</span>
@@ -388,13 +395,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="exp-item">
+                <div class="exp-item reveal" style="--delay: 110ms;">
                     <div class="exp-meta">
                         <span class="exp-date">Jan 2020 - Present</span>
                         <span class="exp-org">Self-employed</span>
                     </div>
                     <div>
-                        <div class="exp-role">Freelance Developer & Designer</div>
+                        <div class="exp-role">Freelance Developer &amp; Designer</div>
                         <div class="exp-desc">Building websites, e-commerce platforms, and digital content for clients.
                             Work spans WordPress development, UI/UX design, brand identity, 3D rendering, and video
                             production. Clients range from retail businesses to independent professionals.</div>
@@ -409,7 +416,7 @@
                 </div>
             </div>
 
-            <div class="edu-block">
+            <div class="edu-block reveal" style="--delay: 160ms;">
                 <div class="edu-label">Education</div>
                 <div class="edu-list">
                     <div class="edu-item">
@@ -435,73 +442,113 @@
         </section>
 
         <!-- GITHUB -->
-        <section class="section reveal r4" id="github">
-            <div class="section-header">
+        <section class="section" id="github">
+            <div class="section-header reveal">
                 <h2 class="section-title">OPEN SOURCE</h2>
                 <span class="section-tag">github.com/omnitx</span>
             </div>
             <div class="github-stats">
-                <div class="gh-stat">
-                    <div class="gh-num" id="gh-repos">
-                        <span class="gh-loading">…</span>
-                    </div>
+                <div class="gh-stat reveal" style="--delay: 40ms;">
+                    <div class="gh-num" id="gh-repos">0</div>
                     <div class="gh-label">Repositories</div>
                 </div>
-                <div class="gh-stat">
-                    <div class="gh-num" id="gh-followers">
-                        <span class="gh-loading">…</span>
-                    </div>
+                <div class="gh-stat reveal" style="--delay: 90ms;">
+                    <div class="gh-num" id="gh-followers">0</div>
                     <div class="gh-label">Followers</div>
                 </div>
-                <div class="gh-stat">
-                    <div class="gh-num" id="gh-stars">
-                        <span class="gh-loading">…</span>
-                    </div>
+                <div class="gh-stat reveal" style="--delay: 140ms;">
+                    <div class="gh-num" id="gh-stars">0</div>
                     <div class="gh-label">Stars Earned</div>
                 </div>
-                <div class="gh-stat">
-                    <div class="gh-num" id="gh-forks">
-                        <span class="gh-loading">…</span>
-                    </div>
+                <div class="gh-stat reveal" style="--delay: 190ms;">
+                    <div class="gh-num" id="gh-forks">0</div>
                     <div class="gh-label">Forks</div>
                 </div>
             </div>
-            <a href="https://github.com/omnitx" target="_blank" rel="noopener" class="btn btn-outline"
-                style="display:inline-flex;">View GitHub Profile →</a>
+            <a href="https://github.com/omnitx" target="_blank" rel="noopener" class="btn btn-outline reveal"
+                style="display:inline-flex; --delay: 220ms;">View GitHub Profile →</a>
         </section>
 
         <!-- CONTACT -->
-        <section class="section reveal r5" id="contact">
-            <div class="section-header">
+        <section class="section" id="contact">
+            <div class="section-header reveal">
                 <h2 class="section-title">CONTACT</h2>
                 <span class="section-tag">Available for work</span>
             </div>
             <div class="contact-grid">
-                <a href="mailto:imranomnitx@duck.com" class="contact-card">
-                    <span class="contact-label">Email</span>
-                    <span class="contact-value">imranomnitx@duck.com</span>
+                <a href="mailto:imranomnitx@duck.com" class="contact-card reveal" style="--delay: 40ms;">
+                    <div>
+                        <span class="contact-label">Email</span>
+                        <span class="contact-value" style="display:block;">imranomnitx@duck.com</span>
+                    </div>
+                    <button type="button" class="copy-pill" id="copy-email">Copy</button>
                 </a>
-                <a href="https://wa.me/8801840538790" target="_blank" rel="noopener" class="contact-card">
-                    <span class="contact-label">WhatsApp</span>
-                    <span class="contact-value">+880 1840-538790</span>
+                <a href="https://wa.me/8801840538790" target="_blank" rel="noopener" class="contact-card reveal" style="--delay: 90ms;">
+                    <div>
+                        <span class="contact-label">WhatsApp</span>
+                        <span class="contact-value" style="display:block;">+880 1840-538790 ↗</span>
+                    </div>
+                    <span style="font-family:var(--mono);font-size:0.55rem;color:var(--accent);">Direct Message</span>
                 </a>
-                <a href="https://github.com/omnitx" target="_blank" rel="noopener" class="contact-card">
-                    <span class="contact-label">GitHub</span>
-                    <span class="contact-value">github.com/omnitx</span>
+                <a href="https://github.com/omnitx" target="_blank" rel="noopener" class="contact-card reveal" style="--delay: 140ms;">
+                    <div>
+                        <span class="contact-label">GitHub</span>
+                        <span class="contact-value" style="display:block;">github.com/omnitx ↗</span>
+                    </div>
+                    <span style="font-family:var(--mono);font-size:0.55rem;color:var(--accent);">Code &amp; Repos</span>
                 </a>
-                <a href="https://linktr.ee/immekun" target="_blank" rel="noopener" class="contact-card">
-                    <span class="contact-label">Linktree</span>
-                    <span class="contact-value">linktr.ee/immekun</span>
+                <a href="https://linktr.ee/immekun" target="_blank" rel="noopener" class="contact-card reveal" style="--delay: 190ms;">
+                    <div>
+                        <span class="contact-label">Linktree</span>
+                        <span class="contact-value" style="display:block;">linktr.ee/immekun ↗</span>
+                    </div>
+                    <span style="font-family:var(--mono);font-size:0.55rem;color:var(--accent);">Channels &amp; Media</span>
                 </a>
+            </div>
+
+            <!-- Compact Scope Launcher from New Build -->
+            <div class="scope-card reveal" style="--delay: 220ms;">
+                <div>
+                    <div class="scope-kicker">INITIATE A TECHNICAL SCOPE</div>
+                    <h3 class="scope-title">Looking for a systems build or audit?</h3>
+                    <p class="scope-desc">Select an engagement focus below to format a technical scope and open directly in WhatsApp or email.</p>
+                </div>
+                <div class="scope-form">
+                    <select id="scope-focus" class="scope-select">
+                        <option value="Zero-Trust Server &amp; Network Hardening">Zero-Trust Server &amp; Network Hardening</option>
+                        <option value="n8n / WhatsApp Automation">n8n / WhatsApp Automation</option>
+                        <option value="Custom CRM &amp; Inventory System">Custom CRM &amp; Inventory System</option>
+                        <option value="High-Performance WooCommerce Store">High-Performance WooCommerce Store</option>
+                        <option value="Docker &amp; Cloud Migration">Docker &amp; Cloud Migration</option>
+                    </select>
+                    <input type="text" id="scope-notes" class="scope-input" placeholder="Optional notes: current stack, domain, or goals..." />
+                    <div class="scope-btns">
+                        <button type="button" class="btn btn-accent" id="send-wa" style="font-size:0.58rem;padding:8px 12px;">WhatsApp ↗</button>
+                        <button type="button" class="btn btn-outline" id="send-mail" style="font-size:0.58rem;padding:8px 12px;">Email →</button>
+                    </div>
+                </div>
             </div>
         </section>
 
         <!-- FOOTER -->
-        <footer class="footer reveal r6">
-            <span class="footer-text">© <span id="yr"></span> Imran Ahmed</span>
-            <span class="footer-text">Dhaka, Bangladesh</span>
+        <footer class="footer reveal">
+            <span class="footer-text">© <span id="yr">2026</span> Imran Ahmed · Dhaka, Bangladesh</span>
+            <div class="footer-domains">
+                <a href="https://imrandev.nav.bd" target="_blank" rel="noopener">imrandev.nav.bd</a>
+                <a href="https://imranah.pro.bd" target="_blank" rel="noopener">imranah.pro.bd</a>
+                <a href="https://thisimran.asf.run" target="_blank" rel="noopener">thisimran.asf.run</a>
+                <a href="https://xn--b5b0eraib6f0c.xn--45bl4db.xn--54b7fta0cc" target="_blank" rel="noopener">ইমরানের.পাতা.বাংলা</a>
+            </div>
         </footer>
 
+    </div>
+
+    <!-- Command Palette (Cmd+K / Ctrl+K) -->
+    <div class="overlay" id="cmd-overlay" role="dialog" aria-modal="true" aria-label="Command palette">
+        <div class="dialog">
+            <input type="text" class="cmd-input" id="cmd-search" placeholder="Type a command or jump to..." autocomplete="off" />
+            <div class="cmd-list" id="cmd-list"></div>
+        </div>
     </div>
 
     <script src="script.js" defer></script>
