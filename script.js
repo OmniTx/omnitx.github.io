@@ -101,12 +101,38 @@ async function loadGitHub() {
 }
 loadGitHub();
 
+// GoatCounter Event Tracking Helper
+function trackEvent(name, title) {
+    if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+        window.goatcounter.count({
+            path: name,
+            title: title || name,
+            event: true
+        });
+    }
+}
+
+// Track CV / Resume Downloads
+document.querySelectorAll('a[href*="Resume.pdf"]').forEach(link => {
+    link.addEventListener('click', () => {
+        trackEvent('download-cv', 'Downloaded Resume PDF');
+    });
+});
+
+// Track WhatsApp Outbound Clicks
+document.querySelectorAll('a[href*="wa.me"]').forEach(link => {
+    link.addEventListener('click', () => {
+        trackEvent('whatsapp-click', 'Clicked WhatsApp Link');
+    });
+});
+
 // Email Copy Helper
 const copyBtn = document.getElementById('copy-email');
 if (copyBtn) {
     copyBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        trackEvent('copy-email', 'Copied Email Address');
         const email = 'imranomnitx@duck.com';
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(email).then(() => showCopied());
@@ -142,6 +168,7 @@ function getScopeText() {
 const sendWaBtn = document.getElementById('send-wa');
 if (sendWaBtn) {
     sendWaBtn.addEventListener('click', () => {
+        trackEvent('scope-send-wa', 'Scope Sent via WhatsApp');
         const msg = encodeURIComponent(getScopeText());
         window.open(`https://wa.me/8801840538790?text=${msg}`, '_blank', 'noopener');
     });
@@ -150,6 +177,7 @@ if (sendWaBtn) {
 const sendMailBtn = document.getElementById('send-mail');
 if (sendMailBtn) {
     sendMailBtn.addEventListener('click', () => {
+        trackEvent('scope-send-mail', 'Scope Sent via Email');
         const focus = document.getElementById('scope-focus')?.value || 'Technical Build';
         const subject = encodeURIComponent(`Technical Scope: ${focus}`);
         const body = encodeURIComponent(getScopeText());
@@ -197,6 +225,7 @@ function renderCommands(q = '') {
 
 function openCmd() {
     if (!cmdOverlay || !cmdSearch) return;
+    trackEvent('open-command-palette', 'Opened Command Palette');
     cmdSearch.value = '';
     renderCommands();
     cmdOverlay.classList.add('open');
